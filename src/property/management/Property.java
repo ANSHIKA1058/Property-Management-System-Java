@@ -19,13 +19,16 @@ enum PropertyType{
 public class Property {
     private final int propertyId;
     private String location;
-    private double price;
+    private long price;
     private PropertyType type;
     private PropertyPurpose purpose;
     private PropertyStatus status;
     private String propertyNumber;
+    private int dealerId;
+    private int ownerId;
+    private String description;
 
-    public Property(int propertyId,String propertyNumber,String location,double price,PropertyType type,PropertyPurpose purpose){
+    public Property(int propertyId,String propertyNumber,String location,long price,PropertyType type,PropertyPurpose purpose,int dealerId,int ownerId,String description){
         this.propertyId=propertyId;
         this.propertyNumber=propertyNumber;
         this.location=location;
@@ -33,6 +36,10 @@ public class Property {
         this.type=type;
         this.purpose=purpose;
         this.status=PropertyStatus.AVAILABLE;
+        this.dealerId=dealerId;
+        this.ownerId=ownerId;
+        this.description=description;
+
     }
 
     //encapsulation
@@ -45,7 +52,7 @@ public class Property {
     public String getLocation(){
         return location;
     }
-    public double getPrice(){
+    public long getPrice(){
         return price;
     }
     public PropertyType getType(){
@@ -60,16 +67,24 @@ public class Property {
     public void setStatus(PropertyStatus status){
         this.status=status;
     }
+    public int getDealerId(){return dealerId;}
+    public int getOwnerId(){return ownerId;}
+    public String getDescription(){return description;}
+
 
     @Override
-    public String toString(){
-        return "ID: "+propertyId+
-                ", Property No: "+propertyNumber+
-                ", Location: "+location+
-                ", Price: "+price+
-                ", Type: "+type+
-                ", Purpose: "+purpose+
-                ", Status: "+status;
+    public String toString() {
+        return
+                "Property Id: " + propertyId +
+                        ", Property No: " + propertyNumber +
+                        ", Location: " + location +
+                        ", Price: " + String.format("%,.0f", price) +
+                        ", Type: " + type +
+                        ", Purpose: " + purpose +
+                        ", Status: " + status +
+                        ", Dealer: " + dealerId +
+                        ", Owner: "+ownerId+
+                        ", Description: "+description;
     }
 
 }
