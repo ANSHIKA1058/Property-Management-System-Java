@@ -102,6 +102,8 @@ public class Main {
                             desc
                     );
                     system.addProperty(p);
+                    system.addPropertyToDB(p);
+
                     break;
 
 
@@ -170,11 +172,10 @@ public class Main {
                     break;
 
                 case 10:
-                    System.out.println("Owner ID: ");
-                    int oid = sc.nextInt();
 
                     System.out.println("Name: ");
                     String name = sc.next();
+                    sc.nextLine();
 
                     System.out.println("Phone: ");
                     String phone = sc.next();
@@ -182,8 +183,10 @@ public class Main {
                     System.out.println("Email: ");
                     String email = sc.next();
 
-                    Owner ownerObj = new Owner(oid, name, phone ,email);
+                    Owner ownerObj = new Owner(0, name, phone ,email);
                     system.addOwner(ownerObj);
+                    system.addOwnerToDB(ownerObj);
+
                     break;
 
 
@@ -192,9 +195,8 @@ public class Main {
                     break;
 
                 case 12:
-                    System.out.println("Dealer ID: ");
-                    int did = sc.nextInt();
                     sc.nextLine();
+
                     System.out.println("Name: ");
                     String dname= sc.nextLine();
                     System.out.println("Phone: ");
@@ -202,9 +204,9 @@ public class Main {
                     System.out.println("Email: ");
                     String demail = sc.next();
 
-                    Dealer dealerObj = new Dealer(did, dname, dphone ,demail);
+                    Dealer dealerObj = new Dealer(0, dname, dphone ,demail);
                     system.addDealer(dealerObj);
-
+                    system.addDealerToDB(dealerObj);
                     break;
 
                 case 13:

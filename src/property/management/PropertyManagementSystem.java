@@ -1,5 +1,6 @@
 package property.management;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.*;
 public class PropertyManagementSystem {
     private List<Property> properties;
@@ -17,10 +18,7 @@ public class PropertyManagementSystem {
            System.out.println("Dealer not found");
            return;
        }
-       if(findOwner(property.getOwnerId())==null){
-           System.out.println("Dealer not found");
-           return;
-       }
+
        if(findOwner(property.getOwnerId())==null){
            System.out.println("Owner not found");
            return;
@@ -231,6 +229,80 @@ public class PropertyManagementSystem {
      return null;
 
     }
+    public void addPropertyToDB(Property p){
+
+        try{
+            Connection con = DatabaseConnection.getConnection();
+
+            String query = "INSERT INTO Property " +
+                    "(property_number, location, price, type, purpose, status, dealer_id, owner_id, description) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            PreparedStatement ps = con.prepareStatement(query);
+
+            ps.setString(1, p.getPropertyNumber());
+            ps.setString(2, p.getLocation());
+            ps.setLong(3, (long)p.getPrice());
+            ps.setString(4, p.getType().toString());
+            ps.setString(5, p.getPurpose().toString());
+            ps.setString(6, p.getStatus().toString());
+            ps.setInt(7, p.getDealerId());
+            ps.setInt(8, p.getOwnerId());
+            ps.setString(9, p.getDescription());
+
+            ps.executeUpdate();
+
+            System.out.println("Property saved to DATABASE ✅");
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public void addOwnerToDB(Owner o){
+        try{
+            Connection con = DatabaseConnection.getConnection();
+
+            String query = "INSERT INTO Owner(name, email, phone) VALUES (?, ?, ?)";
+
+            PreparedStatement ps = con.prepareStatement(query);
+
+            ps.setString(1, o.getName());
+            ps.setString(2, o.getEmail());
+            ps.setString(3, o.getPhone());
+
+            ps.executeUpdate();
+
+            System.out.println("Owner saved to DB");
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    public void addDealerToDB(Dealer d){
+        try{
+            Connection con = DatabaseConnection.getConnection();
+
+            String query = "INSERT INTO Dealer(name, phone, email) VALUES (?, ?, ?)";
+
+            PreparedStatement ps = con.prepareStatement(query);
+
+            ps.setString(1, d.getName());
+            ps.setString(2, d.getPhone());
+            ps.setString(3, d.getEmail());
+
+            ps.executeUpdate();
+
+            System.out.println("Dealer saved to DB");
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
 
 
 }
