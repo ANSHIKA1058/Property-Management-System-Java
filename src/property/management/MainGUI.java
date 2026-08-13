@@ -1,6 +1,7 @@
 package property.management;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class MainGUI extends JFrame {
@@ -9,6 +10,9 @@ public class MainGUI extends JFrame {
     private final Color BACKGROUND_COLOR = new Color(248, 250, 252);
     private final Color CARD_COLOR = Color.WHITE;
 
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+
     public MainGUI() {
 
         setTitle("Property Management System");
@@ -16,13 +20,22 @@ public class MainGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+
+        // Add pages
+        contentPanel.add(createDashboard(), "Dashboard");
+        contentPanel.add(createPropertiesPage(), "Properties");
+
         setLayout(new BorderLayout());
 
         add(createSidebar(), BorderLayout.WEST);
-        add(createDashboard(), BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
     }
 
-    // ================= SIDEBAR =================
+    // =====================================================
+    // SIDEBAR
+    // =====================================================
 
     private JPanel createSidebar() {
 
@@ -31,50 +44,95 @@ public class MainGUI extends JFrame {
         sidebar.setPreferredSize(new Dimension(220, 700));
         sidebar.setBackground(SIDEBAR_COLOR);
 
-        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setLayout(
+                new BoxLayout(sidebar, BoxLayout.Y_AXIS)
+        );
 
-        // Project title
+        // Title
         JLabel title = new JLabel("  🏠 Property");
+
         title.setForeground(Color.WHITE);
-        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setFont(
+                new Font("Arial", Font.BOLD, 22)
+        );
+
         title.setBorder(
-                BorderFactory.createEmptyBorder(30, 10, 30, 10)
+                BorderFactory.createEmptyBorder(
+                        30, 10, 30, 10
+                )
         );
 
         sidebar.add(title);
 
-        // Menu buttons
-        JButton dashboardButton = createMenuButton("Dashboard");
-        JButton propertyButton = createMenuButton("Properties");
-        JButton ownerButton = createMenuButton("Owners");
-        JButton dealerButton = createMenuButton("Dealers");
-        JButton visitButton = createMenuButton("Visits");
+        // Dashboard
+        JButton dashboardButton =
+                createMenuButton("Dashboard");
+
+        dashboardButton.addActionListener(e ->
+                cardLayout.show(
+                        contentPanel,
+                        "Dashboard"
+                )
+        );
 
         sidebar.add(dashboardButton);
+
+        // Properties
+        JButton propertyButton =
+                createMenuButton("Properties");
+
+        propertyButton.addActionListener(e ->
+                cardLayout.show(
+                        contentPanel,
+                        "Properties"
+                )
+        );
+
         sidebar.add(propertyButton);
+
+        // Owners
+        JButton ownerButton =
+                createMenuButton("Owners");
+
         sidebar.add(ownerButton);
+
+        // Dealers
+        JButton dealerButton =
+                createMenuButton("Dealers");
+
         sidebar.add(dealerButton);
+
+        // Visits
+        JButton visitButton =
+                createMenuButton("Visits");
+
         sidebar.add(visitButton);
 
-        // Space
-        sidebar.add(Box.createVerticalGlue());
+        // Push buttons to bottom
+        sidebar.add(
+                Box.createVerticalGlue()
+        );
 
-        // Exit button
-        JButton exitButton = createMenuButton("Exit");
+        // Exit
+        JButton exitButton =
+                createMenuButton("Exit");
+
+        exitButton.addActionListener(e ->
+                System.exit(0)
+        );
 
         sidebar.add(exitButton);
-
-        // Exit functionality
-        exitButton.addActionListener(e -> {
-            System.exit(0);
-        });
 
         return sidebar;
     }
 
-    // ================= MENU BUTTON =================
+    // =====================================================
+    // MENU BUTTON
+    // =====================================================
 
-    private JButton createMenuButton(String text) {
+    private JButton createMenuButton(
+            String text
+    ) {
 
         JButton button = new JButton(text);
 
@@ -82,10 +140,16 @@ public class MainGUI extends JFrame {
                 new Dimension(200, 50)
         );
 
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
 
         button.setFont(
-                new Font("Arial", Font.PLAIN, 16)
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        16
+                )
         );
 
         button.setForeground(Color.WHITE);
@@ -97,63 +161,91 @@ public class MainGUI extends JFrame {
         return button;
     }
 
-    // ================= DASHBOARD =================
+    // =====================================================
+    // DASHBOARD
+    // =====================================================
 
     private JPanel createDashboard() {
 
-        JPanel dashboard = new JPanel(
-                new BorderLayout()
-        );
+        JPanel dashboard =
+                new JPanel(new BorderLayout());
 
-        dashboard.setBackground(BACKGROUND_COLOR);
+        dashboard.setBackground(
+                BACKGROUND_COLOR
+        );
 
         // Header
-        JPanel header = new JPanel(
-                new BorderLayout()
+        JPanel header =
+                new JPanel(new BorderLayout());
+
+        header.setBackground(
+                BACKGROUND_COLOR
         );
 
-        header.setBackground(BACKGROUND_COLOR);
         header.setBorder(
                 BorderFactory.createEmptyBorder(
                         25, 30, 20, 30
                 )
         );
 
-        JLabel heading = new JLabel(
-                "Dashboard"
-        );
+        JLabel heading =
+                new JLabel("Dashboard");
 
         heading.setFont(
-                new Font("Arial", Font.BOLD, 28)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        28
+                )
         );
 
         heading.setForeground(
                 new Color(30, 41, 59)
         );
 
-        JLabel welcome = new JLabel(
-                "Property Management Overview"
-        );
+        JLabel welcome =
+                new JLabel(
+                        "Property Management Overview"
+                );
 
         welcome.setFont(
-                new Font("Arial", Font.PLAIN, 14)
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        14
+                )
         );
 
         welcome.setForeground(
                 new Color(100, 116, 139)
         );
 
-        header.add(heading, BorderLayout.NORTH);
-        header.add(welcome, BorderLayout.SOUTH);
-
-        dashboard.add(header, BorderLayout.NORTH);
-
-        // Cards
-        JPanel cardsPanel = new JPanel(
-                new GridLayout(1, 4, 20, 20)
+        header.add(
+                heading,
+                BorderLayout.NORTH
         );
 
-        cardsPanel.setBackground(BACKGROUND_COLOR);
+        header.add(
+                welcome,
+                BorderLayout.SOUTH
+        );
+
+        dashboard.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+        // Cards
+        JPanel cardsPanel =
+                new JPanel(
+                        new GridLayout(
+                                1, 4, 20, 20
+                        )
+                );
+
+        cardsPanel.setBackground(
+                BACKGROUND_COLOR
+        );
 
         cardsPanel.setBorder(
                 BorderFactory.createEmptyBorder(
@@ -197,7 +289,9 @@ public class MainGUI extends JFrame {
         return dashboard;
     }
 
-    // ================= CARD =================
+    // =====================================================
+    // DASHBOARD CARD
+    // =====================================================
 
     private JPanel createCard(
             String title,
@@ -226,7 +320,8 @@ public class MainGUI extends JFrame {
                 )
         );
 
-        JLabel titleLabel = new JLabel(title);
+        JLabel titleLabel =
+                new JLabel(title);
 
         titleLabel.setFont(
                 new Font(
@@ -240,7 +335,8 @@ public class MainGUI extends JFrame {
                 new Color(100, 116, 139)
         );
 
-        JLabel valueLabel = new JLabel(value);
+        JLabel valueLabel =
+                new JLabel(value);
 
         valueLabel.setFont(
                 new Font(
@@ -255,19 +351,270 @@ public class MainGUI extends JFrame {
         );
 
         card.add(titleLabel);
-        card.add(Box.createVerticalStrut(15));
+
+        card.add(
+                Box.createVerticalStrut(15)
+        );
+
         card.add(valueLabel);
 
         return card;
     }
 
-    // ================= MAIN =================
+    // =====================================================
+    // PROPERTIES PAGE
+    // =====================================================
+
+    private JPanel createPropertiesPage() {
+
+        JPanel panel =
+                new JPanel(new BorderLayout());
+
+        panel.setBackground(
+                BACKGROUND_COLOR
+        );
+
+        // ---------------- HEADER ----------------
+
+        JPanel header =
+                new JPanel(new BorderLayout());
+
+        header.setBackground(
+                BACKGROUND_COLOR
+        );
+
+        header.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20, 25, 15, 25
+                )
+        );
+
+        JLabel title =
+                new JLabel("Properties");
+
+        title.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        28
+                )
+        );
+
+        title.setForeground(
+                new Color(30, 41, 59)
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        // ---------------- SEARCH ----------------
+
+        JPanel searchPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT
+                        )
+                );
+
+        searchPanel.setBackground(
+                BACKGROUND_COLOR
+        );
+
+        JTextField searchField =
+                new JTextField(15);
+
+        searchField.setPreferredSize(
+                new Dimension(180, 35)
+        );
+
+        JButton searchButton =
+                new JButton("Search");
+
+        JButton availableButton =
+                new JButton("Available");
+
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        searchPanel.add(availableButton);
+
+        header.add(
+                searchPanel,
+                BorderLayout.EAST
+        );
+
+        panel.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+        // ---------------- TABLE ----------------
+
+        String[] columns = {
+                "ID",
+                "Property No",
+                "Location",
+                "Price",
+                "Type",
+                "Purpose",
+                "Status",
+                "Dealer ID",
+                "Owner ID"
+        };
+
+        DefaultTableModel model =
+                new DefaultTableModel(
+                        columns,
+                        0
+                );
+
+        JTable table =
+                new JTable(model);
+
+        table.setRowHeight(30);
+
+        table.getTableHeader()
+                .setFont(
+                        new Font(
+                                "Arial",
+                                Font.BOLD,
+                                14
+                        )
+                );
+
+        table.setFont(
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        JScrollPane scrollPane =
+                new JScrollPane(table);
+
+        scrollPane.setBorder(
+                BorderFactory.createEmptyBorder(
+                        0, 25, 15, 25
+                )
+        );
+
+        panel.add(
+                scrollPane,
+                BorderLayout.CENTER
+        );
+
+        // ---------------- BOTTOM BUTTONS ----------------
+
+        JPanel bottomPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT
+                        )
+                );
+
+        bottomPanel.setBackground(
+                BACKGROUND_COLOR
+        );
+
+        bottomPanel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        5, 25, 20, 25
+                )
+        );
+
+        JButton addButton =
+                new JButton("Add Property");
+
+        JButton updateButton =
+                new JButton("Update");
+
+        JButton deleteButton =
+                new JButton("Delete");
+
+        bottomPanel.add(addButton);
+        bottomPanel.add(updateButton);
+        bottomPanel.add(deleteButton);
+
+        panel.add(
+                bottomPanel,
+                BorderLayout.SOUTH
+        );
+
+        // ---------------- BUTTON ACTIONS ----------------
+
+        addButton.addActionListener(e -> {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Add Property form will be connected in the next step.",
+                    "Add Property",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        });
+
+        updateButton.addActionListener(e -> {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Update functionality will be connected in the next step.",
+                    "Update Property",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        });
+
+        deleteButton.addActionListener(e -> {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Delete functionality will be connected in the next step.",
+                    "Delete Property",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        });
+
+        searchButton.addActionListener(e -> {
+
+            String location =
+                    searchField.getText();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Search by location: " + location,
+                    "Search",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        });
+
+        availableButton.addActionListener(e -> {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Available properties filter will be connected in the next step.",
+                    "Available",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        });
+
+        return panel;
+    }
+
+    // =====================================================
+    // MAIN
+    // =====================================================
 
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {
 
-            MainGUI gui = new MainGUI();
+            MainGUI gui =
+                    new MainGUI();
 
             gui.setVisible(true);
         });
