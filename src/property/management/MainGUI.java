@@ -6,6 +6,7 @@ import java.awt.*;
 
 public class MainGUI extends JFrame {
 
+    private PropertyManagementSystem system;
     private final Color SIDEBAR_COLOR = new Color(30, 41, 59);
     private final Color BACKGROUND_COLOR = new Color(248, 250, 252);
     private final Color CARD_COLOR = Color.WHITE;
@@ -15,6 +16,7 @@ public class MainGUI extends JFrame {
 
     public MainGUI() {
 
+        system = new PropertyManagementSystem();
         setTitle("Property Management System");
         setSize(1200, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -546,12 +548,7 @@ public class MainGUI extends JFrame {
 
         addButton.addActionListener(e -> {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Add Property form will be connected in the next step.",
-                    "Add Property",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            showAddPropertyForm();
 
         });
 
@@ -604,6 +601,45 @@ public class MainGUI extends JFrame {
 
         return panel;
     }
+    private void addFormRow(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String labelText,
+            JComponent component
+    ) {
+
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.3;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+
+        JLabel label = new JLabel(labelText);
+
+        label.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
+        );
+
+        panel.add(label, gbc);
+
+        gbc.weightx = 0.7;
+        gbc.gridx = 1;
+
+        panel.add(component, gbc);
+    }
+
+
+
+
+
+
+
+
+
 
     // =====================================================
     // MAIN
@@ -618,5 +654,205 @@ public class MainGUI extends JFrame {
 
             gui.setVisible(true);
         });
+    }
+
+
+
+
+    // =====================================================
+// ADD PROPERTY FORM
+// =====================================================
+
+    private void showAddPropertyForm() {
+
+        JDialog dialog = new JDialog(
+                this,
+                "Add Property",
+                true
+        );
+
+        dialog.setSize(550, 600);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        panel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20, 30, 20, 30
+                )
+        );
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Fields
+        JTextField idField = new JTextField();
+        JTextField numberField = new JTextField();
+        JTextField locationField = new JTextField();
+        JTextField priceField = new JTextField();
+
+        JComboBox<String> typeBox =
+                new JComboBox<>(
+                        new String[]{
+                                "FLAT",
+                                "VILLA",
+                                "PLOT",
+                                "SHOP"
+                        }
+                );
+
+        JComboBox<String> purposeBox =
+                new JComboBox<>(
+                        new String[]{
+                                "SELL",
+                                "RENT"
+                        }
+                );
+
+        JTextField dealerField = new JTextField();
+        JTextField ownerField = new JTextField();
+        JTextField descriptionField = new JTextField();
+
+        // Add rows
+        addFormRow(panel, gbc, 0,
+                "Property ID:", idField);
+
+        addFormRow(panel, gbc, 1,
+                "Property Number:", numberField);
+
+        addFormRow(panel, gbc, 2,
+                "Location:", locationField);
+
+        addFormRow(panel, gbc, 3,
+                "Price:", priceField);
+
+        addFormRow(panel, gbc, 4,
+                "Property Type:", typeBox);
+
+        addFormRow(panel, gbc, 5,
+                "Purpose:", purposeBox);
+
+        addFormRow(panel, gbc, 6,
+                "Dealer ID:", dealerField);
+
+        addFormRow(panel, gbc, 7,
+                "Owner ID:", ownerField);
+
+        addFormRow(panel, gbc, 8,
+                "Description:", descriptionField);
+
+        // Save button
+        JButton saveButton =
+                new JButton("Save Property");
+
+        saveButton.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
+        );
+
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+
+        panel.add(saveButton, gbc);
+
+        // Save action
+        saveButton.addActionListener(e -> {
+
+            try {
+
+                int id = Integer.parseInt(
+                        idField.getText()
+                );
+
+                String propertyNumber =
+                        numberField.getText();
+
+                String location =
+                        locationField.getText();
+
+                long price = Long.parseLong(
+                        priceField.getText()
+                );
+
+                int dealerId = Integer.parseInt(
+                        dealerField.getText()
+                );
+
+                int ownerId = Integer.parseInt(
+                        ownerField.getText()
+                );
+
+                String description =
+                        descriptionField.getText();
+
+                PropertyType type =
+                        PropertyType.valueOf(
+                                typeBox
+                                        .getSelectedItem()
+                                        .toString()
+                        );
+
+                PropertyPurpose purpose =
+                        PropertyPurpose.valueOf(
+                                purposeBox
+                                        .getSelectedItem()
+                                        .toString()
+                        );
+
+                Property property =
+                        new Property(
+                                id,
+                                propertyNumber,
+                                location,
+                                price,
+                                type,
+                                purpose,
+                                dealerId,
+                                ownerId,
+                                description
+                        );
+
+                system.addProperty(property);
+                system.addPropertyToDB(property);
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Property added successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                dialog.dispose();
+
+            } catch (NumberFormatException ex) {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Please enter valid numbers.",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+            } catch (Exception ex) {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Error: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
+        dialog.add(panel);
+
+        dialog.setVisible(true);
     }
 }
