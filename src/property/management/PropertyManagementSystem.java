@@ -1,17 +1,39 @@
 package property.management;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.sql.ResultSet;
+import java.util.*;;
+
 public class PropertyManagementSystem {
+
     private List<Property> properties;
     private Queue<VisitRequest> visitQueue;
     private Scanner sc = new Scanner(System.in);
+
     private List<Owner> owners = new ArrayList<>();
     private List<Dealer> dealers = new ArrayList<>();
+
     public PropertyManagementSystem(){
+
         properties = new ArrayList<>();
-        visitQueue=new LinkedList<>();
+        visitQueue = new LinkedList<>();
+
+        loadOwnersFromDB();
+        loadDealersFromDB();
     }
+
+    public List<Dealer> getDealers() {
+        return dealers;
+    }
+
+    public List<Owner> getOwners() {
+        return owners;
+    }
+
+    public List<Property> getProperties() {
+        return properties;
+    }
+
     //Add property
     public void addProperty(Property property){
        if(findDealer(property.getDealerId())==null){
@@ -299,6 +321,86 @@ public class PropertyManagementSystem {
             System.out.println("Dealer saved to DB");
 
         }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    // Load owners from database
+    public void loadOwnersFromDB() {
+
+        try {
+            Connection con = DatabaseConnection.getConnection();
+
+            String query =
+                    "SELECT owner_id, name, phone, email FROM Owner";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+
+            owners.clear();
+
+            while (rs.next()) {
+
+                Owner owner = new Owner(
+                        rs.getInt("owner_id"),
+                        rs.getString("name"),
+                        rs.getString("phone"),
+                        rs.getString("email")
+                );
+
+                owners.add(owner);
+            }
+
+            System.out.println(
+                    "Owners loaded from database: "
+                            + owners.size()
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // Load dealers from database
+    public void loadDealersFromDB() {
+
+        try {
+            Connection con = DatabaseConnection.getConnection();
+
+            String query =
+                    "SELECT dealer_id, name, phone, email FROM Dealer";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+
+            dealers.clear();
+
+            while (rs.next()) {
+
+                Dealer dealer = new Dealer(
+                        rs.getInt("dealer_id"),
+                        rs.getString("name"),
+                        rs.getString("phone"),
+                        rs.getString("email")
+                );
+
+                dealers.add(dealer);
+            }
+
+            System.out.println(
+                    "Dealers loaded from database: "
+                            + dealers.size()
+            );
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

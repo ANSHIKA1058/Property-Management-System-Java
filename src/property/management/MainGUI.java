@@ -7,6 +7,10 @@ import java.awt.*;
 public class MainGUI extends JFrame {
 
     private PropertyManagementSystem system;
+
+    private DefaultTableModel propertyTableModel;
+    private JTable propertyTable;
+
     private final Color SIDEBAR_COLOR = new Color(30, 41, 59);
     private final Color BACKGROUND_COLOR = new Color(248, 250, 252);
     private final Color CARD_COLOR = Color.WHITE;
@@ -465,18 +469,18 @@ public class MainGUI extends JFrame {
                 "Owner ID"
         };
 
-        DefaultTableModel model =
+        propertyTableModel =
                 new DefaultTableModel(
                         columns,
                         0
                 );
 
-        JTable table =
-                new JTable(model);
+        propertyTable =
+                new JTable(propertyTableModel);
 
-        table.setRowHeight(30);
+        propertyTable.setRowHeight(30);
 
-        table.getTableHeader()
+        propertyTable.getTableHeader()
                 .setFont(
                         new Font(
                                 "Arial",
@@ -485,16 +489,17 @@ public class MainGUI extends JFrame {
                         )
                 );
 
-        table.setFont(
+        propertyTable.setFont(
                 new Font(
                         "Arial",
                         Font.PLAIN,
-                        13
+                        14
                 )
         );
 
         JScrollPane scrollPane =
-                new JScrollPane(table);
+                new JScrollPane(propertyTable);
+
 
         scrollPane.setBorder(
                 BorderFactory.createEmptyBorder(
@@ -598,7 +603,7 @@ public class MainGUI extends JFrame {
             );
 
         });
-
+        refreshPropertyTable();
         return panel;
     }
     private void addFormRow(
@@ -633,6 +638,32 @@ public class MainGUI extends JFrame {
     }
 
 
+
+
+
+
+
+    private void refreshPropertyTable() {
+
+        propertyTableModel.setRowCount(0);
+
+        for (Property p : system.getProperties()) {
+
+            Object[] row = {
+                    p.getPropertyId(),
+                    p.getPropertyNumber(),
+                    p.getLocation(),
+                    p.getPrice(),
+                    p.getType(),
+                    p.getPurpose(),
+                    p.getStatus(),
+                    p.getDealerId(),
+                    p.getOwnerId()
+            };
+
+            propertyTableModel.addRow(row);
+        }
+    }
 
 
 
@@ -711,8 +742,21 @@ public class MainGUI extends JFrame {
                         }
                 );
 
-        JTextField dealerField = new JTextField();
-        JTextField ownerField = new JTextField();
+        JComboBox<Dealer> dealerBox =
+                new JComboBox<>();
+
+        for (Dealer dealer : system.getDealers()) {
+            dealerBox.addItem(dealer);
+        }
+
+        JComboBox<Owner> ownerBox =
+                new JComboBox<>();
+
+        for (Owner owner : system.getOwners()) {
+            ownerBox.addItem(owner);
+        }
+
+
         JTextField descriptionField = new JTextField();
 
         // Add rows
@@ -735,10 +779,10 @@ public class MainGUI extends JFrame {
                 "Purpose:", purposeBox);
 
         addFormRow(panel, gbc, 6,
-                "Dealer ID:", dealerField);
+                "Dealer:", dealerBox);
 
         addFormRow(panel, gbc, 7,
-                "Owner ID:", ownerField);
+                "Owner:", ownerBox);
 
         addFormRow(panel, gbc, 8,
                 "Description:", descriptionField);
@@ -781,13 +825,26 @@ public class MainGUI extends JFrame {
                         priceField.getText()
                 );
 
-                int dealerId = Integer.parseInt(
-                        dealerField.getText()
-                );
+                Dealer selectedDealer =
+                        (Dealer) dealerBox.getSelectedItem();
 
-                int ownerId = Integer.parseInt(
-                        ownerField.getText()
-                );
+                Owner selectedOwner =
+                        (Owner) ownerBox.getSelectedItem();
+
+                if (selectedDealer == null || selectedOwner == null) {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Please select a Dealer and Owner.",
+                            "Invalid Selection",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+
+                    return;
+                }
+
+                int dealerId = selectedDealer.getDealerId();
+                int ownerId = selectedOwner.getOwnerId();
 
                 String description =
                         descriptionField.getText();
@@ -820,14 +877,32 @@ public class MainGUI extends JFrame {
                         );
 
                 system.addProperty(property);
-                system.addPropertyToDB(property);
 
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        "Property added successfully!",
-                        "Success",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                if (system.searchProperty(propertyNumber) != null) {
+
+                    system.addPropertyToDB(property);
+
+                    refreshPropertyTable();
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Property added successfully!",
+                            "Success",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    dialog.dispose();
+
+                } else {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Owner ID or Dealer ID not found!",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+
 
                 dialog.dispose();
 
@@ -855,4 +930,6 @@ public class MainGUI extends JFrame {
 
         dialog.setVisible(true);
     }
+
+
 }
