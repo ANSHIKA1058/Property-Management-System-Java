@@ -744,20 +744,32 @@ public class MainGUI extends JFrame {
             );
         });
 
+
+
+        //search button
         searchButton.addActionListener(e -> {
 
-            String location = searchField.getText().trim();
+            String searchText = searchField.getText().trim();
 
-            if (location.isEmpty()) {
+            // Empty search -> show all properties
+            if (searchText.isEmpty()) {
                 refreshPropertyTable();
                 return;
             }
 
             propertyTableModel.setRowCount(0);
 
+            boolean found = false;
+
             for (Property p : system.getProperties()) {
 
-                if (p.getLocation().equalsIgnoreCase(location)) {
+                String location = p.getLocation().toLowerCase();
+                String propertyNumber = p.getPropertyNumber().toLowerCase();
+                String price = String.valueOf(p.getPrice());
+
+                if (location.contains(searchText.toLowerCase())
+                        || propertyNumber.contains(searchText.toLowerCase())
+                        || price.equals(searchText)) {
 
                     Object[] row = {
                             p.getPropertyId(),
@@ -772,19 +784,22 @@ public class MainGUI extends JFrame {
                     };
 
                     propertyTableModel.addRow(row);
+                    found = true;
                 }
             }
 
-            if (propertyTableModel.getRowCount() == 0) {
+            if (!found) {
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "No property found at: " + location,
+                        "No property found for: " + searchText,
                         "Search Result",
                         JOptionPane.INFORMATION_MESSAGE
                 );
             }
         });
+
+
 
         availableButton.addActionListener(e -> {
 
