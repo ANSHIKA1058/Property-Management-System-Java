@@ -20,6 +20,7 @@ public class PropertyManagementSystem {
 
         loadOwnersFromDB();
         loadDealersFromDB();
+        loadPropertiesFromDB();
     }
 
     public List<Dealer> getDealers() {
@@ -405,6 +406,126 @@ public class PropertyManagementSystem {
         }
     }
 
+
+
+
+    // Load properties from database
+    public void loadPropertiesFromDB() {
+
+        try {
+
+            Connection con = DatabaseConnection.getConnection();
+
+            String query =
+                    "SELECT property_id, property_number, location, price, " +
+                            "type, purpose, status, dealer_id, owner_id, description " +
+                            "FROM Property";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+
+            properties.clear();
+
+            while (rs.next()) {
+
+                Property property = new Property(
+                        rs.getInt("property_id"),
+                        rs.getString("property_number"),
+                        rs.getString("location"),
+                        rs.getLong("price"),
+                        PropertyType.valueOf(rs.getString("type")),
+                        PropertyPurpose.valueOf(rs.getString("purpose")),
+                        rs.getInt("dealer_id"),
+                        rs.getInt("owner_id"),
+                        rs.getString("description")
+                );
+
+                property.setStatus(
+                        PropertyStatus.valueOf(
+                                rs.getString("status")
+                        )
+                );
+
+                properties.add(property);
+            }
+
+            System.out.println(
+                    "Properties loaded from database: "
+                            + properties.size()
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deletePropertyFromDB(int propertyId) {
+
+        try {
+
+            Connection con = DatabaseConnection.getConnection();
+
+            String query =
+                    "DELETE FROM Property WHERE property_id = ?";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ps.setInt(1, propertyId);
+
+            ps.executeUpdate();
+
+            System.out.println("Property deleted from DATABASE");
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    public void updatePropertyStatusInDB(
+            int propertyId,
+            PropertyStatus status
+    ) {
+
+        try {
+
+            Connection con =
+                    DatabaseConnection.getConnection();
+
+            String query =
+                    "UPDATE Property SET status = ? " +
+                            "WHERE property_id = ?";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ps.setString(
+                    1,
+                    status.toString()
+            );
+
+            ps.setInt(
+                    2,
+                    propertyId
+            );
+
+            ps.executeUpdate();
+
+            System.out.println(
+                    "Property status updated in DATABASE"
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
 
 
 }

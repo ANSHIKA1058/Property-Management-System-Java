@@ -21,11 +21,14 @@ public class Dealer {
     public String getPhone(){
         return phone;
     }
-    public String getEmail(){
+    public String getEmail() {
         return email;
     }
     @Override
     public String toString() {
-        return dealerId + " - " + name;
+        return "Dealer ID: " + dealerId +
+                ", Name: " + name +
+                ", Phone: " + phone +
+                ", Email: " + email;
     }
 }

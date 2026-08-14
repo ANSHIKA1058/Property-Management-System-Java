@@ -10,6 +10,10 @@ public class MainGUI extends JFrame {
 
     private DefaultTableModel propertyTableModel;
     private JTable propertyTable;
+    private JLabel totalPropertiesLabel;
+    private JLabel availableLabel;
+    private JLabel soldLabel;
+    private JLabel rentedLabel;
 
     private final Color SIDEBAR_COLOR = new Color(30, 41, 59);
     private final Color BACKGROUND_COLOR = new Color(248, 250, 252);
@@ -32,9 +36,8 @@ public class MainGUI extends JFrame {
         // Add pages
         contentPanel.add(createDashboard(), "Dashboard");
         contentPanel.add(createPropertiesPage(), "Properties");
-
+        refreshDashboard();
         setLayout(new BorderLayout());
-
         add(createSidebar(), BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
     }
@@ -241,6 +244,33 @@ public class MainGUI extends JFrame {
                 BorderLayout.NORTH
         );
 
+        // ==============================
+        // REAL PROPERTY COUNTS
+        // ==============================
+
+        int totalProperties =
+                system.getProperties().size();
+
+        int availableProperties = 0;
+        int soldProperties = 0;
+        int rentedProperties = 0;
+
+        for (Property property : system.getProperties()) {
+
+            if (property.getStatus() == PropertyStatus.AVAILABLE) {
+
+                availableProperties++;
+
+            } else if (property.getStatus() == PropertyStatus.SOLD) {
+
+                soldProperties++;
+
+            } else if (property.getStatus() == PropertyStatus.RENTED) {
+
+                rentedProperties++;
+            }
+        }
+
         // Cards
         JPanel cardsPanel =
                 new JPanel(
@@ -259,33 +289,20 @@ public class MainGUI extends JFrame {
                 )
         );
 
-        cardsPanel.add(
-                createCard(
-                        "Total Properties",
-                        "0"
-                )
-        );
+        JPanel totalCard = createCard("Total Properties", "0");
+        JPanel availableCard = createCard("Available", "0");
+        JPanel soldCard = createCard("Sold", "0");
+        JPanel rentedCard = createCard("Rented", "0");
 
-        cardsPanel.add(
-                createCard(
-                        "Available",
-                        "0"
-                )
-        );
+        totalPropertiesLabel = (JLabel) totalCard.getComponent(2);
+        availableLabel = (JLabel) availableCard.getComponent(2);
+        soldLabel = (JLabel) soldCard.getComponent(2);
+        rentedLabel = (JLabel) rentedCard.getComponent(2);
 
-        cardsPanel.add(
-                createCard(
-                        "Sold",
-                        "0"
-                )
-        );
-
-        cardsPanel.add(
-                createCard(
-                        "Rented",
-                        "0"
-                )
-        );
+        cardsPanel.add(totalCard);
+        cardsPanel.add(availableCard);
+        cardsPanel.add(soldCard);
+        cardsPanel.add(rentedCard);
 
         dashboard.add(
                 cardsPanel,
@@ -294,7 +311,6 @@ public class MainGUI extends JFrame {
 
         return dashboard;
     }
-
     // =====================================================
     // DASHBOARD CARD
     // =====================================================
@@ -457,6 +473,7 @@ public class MainGUI extends JFrame {
 
         // ---------------- TABLE ----------------
 
+
         String[] columns = {
                 "ID",
                 "Property No",
@@ -557,51 +574,251 @@ public class MainGUI extends JFrame {
 
         });
 
+
         updateButton.addActionListener(e -> {
+
+            int selectedRow = propertyTable.getSelectedRow();
+
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please select a property to update.",
+                        "No Selection",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                return;
+            }
+
+            String propertyNumber =
+                    propertyTableModel
+                            .getValueAt(selectedRow, 1)
+                            .toString();
+
+            Property property =
+                    system.searchProperty(propertyNumber);
+
+            if (property == null) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Property not found.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                return;
+            }
+
+            String[] statuses = {
+                    "AVAILABLE",
+                    "SOLD",
+                    "RENTED"
+            };
+
+            JComboBox<String> statusBox =
+                    new JComboBox<>(statuses);
+
+            statusBox.setSelectedItem(
+                    property.getStatus().toString()
+            );
+
+            int result = JOptionPane.showConfirmDialog(
+                    this,
+                    statusBox,
+                    "Update Property Status",
+                    JOptionPane.OK_CANCEL_OPTION
+            );
+
+            if (result != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            PropertyStatus newStatus =
+                    PropertyStatus.valueOf(
+                            statusBox.getSelectedItem().toString()
+                    );
+
+            // Update memory
+            system.updateProperty(
+                    propertyNumber,
+                    newStatus
+            );
+
+            // Update database
+            system.updatePropertyStatusInDB(
+                    property.getPropertyId(),
+                    newStatus
+            );
+
+            // Refresh table
+            refreshPropertyTable();
+
+            // Refresh dashboard
+            refreshDashboard();
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Update functionality will be connected in the next step.",
-                    "Update Property",
+                    "Property status updated successfully!",
+                    "Success",
                     JOptionPane.INFORMATION_MESSAGE
             );
 
         });
 
+
+
+
         deleteButton.addActionListener(e -> {
+
+            int selectedRow = propertyTable.getSelectedRow();
+
+            // No property selected
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please select a property to delete."
+                );
+                return;
+            }
+
+            // Get property ID from table
+            int propertyId = (int) propertyTableModel.getValueAt(
+                    selectedRow,
+                    0
+            );
+
+            String propertyNumber =
+                    propertyTableModel.getValueAt(
+                            selectedRow,
+                            1
+                    ).toString();
+
+            // Confirmation
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to delete property "
+                            + propertyNumber + "?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            // Find property in memory
+            Property property =
+                    system.searchProperty(propertyNumber);
+
+            if (property == null) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Property not found.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                return;
+            }
+
+            // Delete from database
+            system.deletePropertyFromDB(propertyId);
+
+            // Delete from memory
+            system.getProperties().remove(property);
+
+            // Refresh GUI
+            refreshPropertyTable();
+            refreshDashboard();
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Delete functionality will be connected in the next step.",
-                    "Delete Property",
+                    "Property deleted successfully!",
+                    "Success",
                     JOptionPane.INFORMATION_MESSAGE
             );
-
         });
 
         searchButton.addActionListener(e -> {
 
-            String location =
-                    searchField.getText();
+            String location = searchField.getText().trim();
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Search by location: " + location,
-                    "Search",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            if (location.isEmpty()) {
+                refreshPropertyTable();
+                return;
+            }
 
+            propertyTableModel.setRowCount(0);
+
+            for (Property p : system.getProperties()) {
+
+                if (p.getLocation().equalsIgnoreCase(location)) {
+
+                    Object[] row = {
+                            p.getPropertyId(),
+                            p.getPropertyNumber(),
+                            p.getLocation(),
+                            p.getPrice(),
+                            p.getType(),
+                            p.getPurpose(),
+                            p.getStatus(),
+                            p.getDealerId(),
+                            p.getOwnerId()
+                    };
+
+                    propertyTableModel.addRow(row);
+                }
+            }
+
+            if (propertyTableModel.getRowCount() == 0) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No property found at: " + location,
+                        "Search Result",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
         });
 
         availableButton.addActionListener(e -> {
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Available properties filter will be connected in the next step.",
-                    "Available",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            propertyTableModel.setRowCount(0);
 
+            for (Property p : system.getProperties()) {
+
+                if (p.getStatus() == PropertyStatus.AVAILABLE) {
+
+                    Object[] row = {
+                            p.getPropertyId(),
+                            p.getPropertyNumber(),
+                            p.getLocation(),
+                            p.getPrice(),
+                            p.getType(),
+                            p.getPurpose(),
+                            p.getStatus(),
+                            p.getDealerId(),
+                            p.getOwnerId()
+                    };
+
+                    propertyTableModel.addRow(row);
+                }
+            }
+
+            if (propertyTableModel.getRowCount() == 0) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No available properties found.",
+                        "Available Properties",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
         });
         refreshPropertyTable();
         return panel;
@@ -883,6 +1100,7 @@ public class MainGUI extends JFrame {
                     system.addPropertyToDB(property);
 
                     refreshPropertyTable();
+                    refreshDashboard();
 
                     JOptionPane.showMessageDialog(
                             dialog,
@@ -929,6 +1147,37 @@ public class MainGUI extends JFrame {
         dialog.add(panel);
 
         dialog.setVisible(true);
+    }
+
+
+
+
+
+    private void refreshDashboard() {
+
+        int total = system.getProperties().size();
+
+        int available = 0;
+        int sold = 0;
+        int rented = 0;
+
+        for (Property p : system.getProperties()) {
+
+            if (p.getStatus() == PropertyStatus.AVAILABLE) {
+                available++;
+            }
+            else if (p.getStatus() == PropertyStatus.SOLD) {
+                sold++;
+            }
+            else if (p.getStatus() == PropertyStatus.RENTED) {
+                rented++;
+            }
+        }
+
+        totalPropertiesLabel.setText(String.valueOf(total));
+        availableLabel.setText(String.valueOf(available));
+        soldLabel.setText(String.valueOf(sold));
+        rentedLabel.setText(String.valueOf(rented));
     }
 
 
