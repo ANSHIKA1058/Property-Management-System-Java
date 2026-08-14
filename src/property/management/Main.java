@@ -203,8 +203,10 @@ public class Main {
                     String dphone = sc.next();
                     System.out.println("Email: ");
                     String demail = sc.next();
+                    System.out.println("Password: ");
+                    String dpassword = sc.next();
 
-                    Dealer dealerObj = new Dealer(0, dname, dphone ,demail);
+                    Dealer dealerObj = new Dealer(0, dname, dphone ,demail,dpassword);
                     system.addDealer(dealerObj);
                     system.addDealerToDB(dealerObj);
                     break;

@@ -13,7 +13,7 @@ public class PropertyManagementSystem {
     private List<Owner> owners = new ArrayList<>();
     private List<Dealer> dealers = new ArrayList<>();
 
-    public PropertyManagementSystem(){
+    public PropertyManagementSystem() {
 
         properties = new ArrayList<>();
         visitQueue = new LinkedList<>();
@@ -36,24 +36,24 @@ public class PropertyManagementSystem {
     }
 
     //Add property
-    public void addProperty(Property property){
-       if(findDealer(property.getDealerId())==null){
-           System.out.println("Dealer not found");
-           return;
-       }
+    public void addProperty(Property property) {
+        if (findDealer(property.getDealerId()) == null) {
+            System.out.println("Dealer not found");
+            return;
+        }
 
-       if(findOwner(property.getOwnerId())==null){
-           System.out.println("Owner not found");
-           return;
-       }
-       properties.add(property);
+        if (findOwner(property.getOwnerId()) == null) {
+            System.out.println("Owner not found");
+            return;
+        }
+        properties.add(property);
         System.out.println("Property added successfully");
     }
 
     //Search property
-    public Property searchProperty(String propertyNumber){
-        for(Property p:properties){
-            if(p.getPropertyNumber().equals(propertyNumber)){
+    public Property searchProperty(String propertyNumber) {
+        for (Property p : properties) {
+            if (p.getPropertyNumber().equals(propertyNumber)) {
                 return p;
             }
         }
@@ -61,20 +61,20 @@ public class PropertyManagementSystem {
     }
 
     //update property status
-    public void updateProperty(String propertyNumber,PropertyStatus status){
+    public void updateProperty(String propertyNumber, PropertyStatus status) {
         Property p = searchProperty(propertyNumber);
-        if(p!=null){
+        if (p != null) {
             p.setStatus(status);
             System.out.println("Property updated");
-        }else{
+        } else {
             System.out.println("Property not found");
         }
     }
 
     // delte propert
-    public void deleteProperty(String propertyNumber){
+    public void deleteProperty(String propertyNumber) {
         Property p = searchProperty(propertyNumber);
-        if(p==null){
+        if (p == null) {
             System.out.println("Property not found");
             return;
         }
@@ -84,81 +84,83 @@ public class PropertyManagementSystem {
         System.out.println("Confirm delete (Y/N): ");
         String choice = sc.next();
 
-        if(choice.equalsIgnoreCase("Y")){
+        if (choice.equalsIgnoreCase("Y")) {
             properties.remove(p);
             System.out.println("Deleted");
-        }
-        else{
+        } else {
             System.out.println("Cancelled");
         }
     }
 
     //show avaliable properties
     public void showAvailable() {
-        boolean found=false;
+        boolean found = false;
 
-        for(Property p:properties){
+        for (Property p : properties) {
 
-            if(p.getStatus()==PropertyStatus.AVAILABLE){
+            if (p.getStatus() == PropertyStatus.AVAILABLE) {
 
                 System.out.println(p);
-                found=true;
+                found = true;
 
             }
         }
 
-        if(!found){
+        if (!found) {
             System.out.println("No available properties");
         }
     }
-    public void searchByLocation(String location){
-        boolean found= false;
-        for(Property p:properties){
-            if(p.getLocation().equalsIgnoreCase(location)){
+
+    public void searchByLocation(String location) {
+        boolean found = false;
+        for (Property p : properties) {
+            if (p.getLocation().equalsIgnoreCase(location)) {
                 System.out.println(p);
-                found=true;
+                found = true;
             }
         }
-        if(!found){
+        if (!found) {
             System.out.println("No property found at this location");
         }
     }
 
     //show all properties
-    public void showAll(){
-        if(properties.isEmpty()){
+    public void showAll() {
+        if (properties.isEmpty()) {
             System.out.println("No properties available");
             return;
         }
 
-        for(Property p : properties){
+        for (Property p : properties) {
             System.out.println(p);
         }
     }
-    public void scheduleVisit(VisitRequest visit){
+
+    public void scheduleVisit(VisitRequest visit) {
         visitQueue.add(visit);
     }
 
-    public void processNextVisit(){
+    public void processNextVisit() {
         VisitRequest visit = visitQueue.poll();
-        if(visit==null){
+        if (visit == null) {
             System.out.println("No visits scheduled.");
             return;
         }
         visit.setStatus(VisitStatus.COMPLETED);
-        Property property= visit.getProperty();
+        Property property = visit.getProperty();
         System.out.println("Visit Completed");
         System.out.println(visit);
     }
-    public void finalizeDeal(Property property){
-        if(property.getStatus() != PropertyStatus.AVAILABLE){
+
+    public void finalizeDeal(Property property) {
+        if (property.getStatus() != PropertyStatus.AVAILABLE) {
             System.out.println("Deal cannot be finalized. Property not available.");
             return;
         }
 
-        if(property.getPurpose()==PropertyPurpose.SELL){
+        if (property.getPurpose() == PropertyPurpose.SELL) {
             property.setStatus(PropertyStatus.SOLD);
-        }else{
+        } else {
             property.setStatus(PropertyStatus.RENTED);
         }
 
@@ -166,37 +168,37 @@ public class PropertyManagementSystem {
     }
 
     /// serchByPriceRange()
-    public void searchByPriceRange(double min,double max){
-        boolean found =false;
-        for(Property p:properties){
-            if(p.getPrice()>=min && p.getPrice()<=max){
+    public void searchByPriceRange(double min, double max) {
+        boolean found = false;
+        for (Property p : properties) {
+            if (p.getPrice() >= min && p.getPrice() <= max) {
                 System.out.println(p);
-                found=true;
+                found = true;
             }
         }
-        if(!found){
+        if (!found) {
             System.out.println("No property found in this price range");
         }
     }
 
 
     // show dealer properties
-    public void showDealerProperties(int dealerId){
+    public void showDealerProperties(int dealerId) {
         boolean found = false;
-        for(Property p:properties){
-            if(p.getDealerId()==dealerId){
+        for (Property p : properties) {
+            if (p.getDealerId() == dealerId) {
                 System.out.println(p);
-                found=true;
+                found = true;
             }
         }
-        if(!found){
+        if (!found) {
             System.out.println("Dealer has no properties");
         }
     }
 
 
     //owner method
-    public void addOwner(Owner owner){
+    public void addOwner(Owner owner) {
         owners.add(owner);
         System.out.println("Owner added successfully");
     }
@@ -215,46 +217,47 @@ public class PropertyManagementSystem {
 
 
     //owner search method
-    public Owner findOwner(int ownerId){
-        for(Owner o: owners){
-            if(o.getOwnerId()==ownerId){
+    public Owner findOwner(int ownerId) {
+        for (Owner o : owners) {
+            if (o.getOwnerId() == ownerId) {
                 return o;
             }
         }
         return null;
     }
 
-        // dealer method
-        public void addDealer(Dealer dealer){
-           dealers.add(dealer);
-            System.out.println("Dealer added successfully");
-        }
+    // dealer method
+    public void addDealer(Dealer dealer) {
+        dealers.add(dealer);
+        System.out.println("Dealer added successfully");
+    }
 
 
-        //show dealers
-    public void showDealers(){
-        if(dealers.isEmpty()){
+    //show dealers
+    public void showDealers() {
+        if (dealers.isEmpty()) {
             System.out.println("No dealers found");
             return;
         }
-        for(Dealer d:dealers){
+        for (Dealer d : dealers) {
             System.out.println(d);
         }
     }
 
     //Dealer search method
-    public Dealer findDealer(int dealerId){
-        for(Dealer d:  dealers) {
+    public Dealer findDealer(int dealerId) {
+        for (Dealer d : dealers) {
             if (d.getDealerId() == dealerId) {
                 return d;
             }
         }
-     return null;
+        return null;
 
     }
-    public void addPropertyToDB(Property p){
 
-        try{
+    public void addPropertyToDB(Property p) {
+
+        try {
             Connection con = DatabaseConnection.getConnection();
 
             String query = "INSERT INTO Property " +
@@ -265,7 +268,7 @@ public class PropertyManagementSystem {
 
             ps.setString(1, p.getPropertyNumber());
             ps.setString(2, p.getLocation());
-            ps.setLong(3, (long)p.getPrice());
+            ps.setLong(3, (long) p.getPrice());
             ps.setString(4, p.getType().toString());
             ps.setString(5, p.getPurpose().toString());
             ps.setString(6, p.getStatus().toString());
@@ -277,14 +280,14 @@ public class PropertyManagementSystem {
 
             System.out.println("Property saved to DATABASE ✅");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    public void addOwnerToDB(Owner o){
-        try{
+    public void addOwnerToDB(Owner o) {
+        try {
             Connection con = DatabaseConnection.getConnection();
 
             String query = "INSERT INTO Owner(name, email, phone) VALUES (?, ?, ?)";
@@ -299,34 +302,33 @@ public class PropertyManagementSystem {
 
             System.out.println("Owner saved to DB");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    public void addDealerToDB(Dealer d){
-        try{
+    public void addDealerToDB(Dealer d) {
+        try {
             Connection con = DatabaseConnection.getConnection();
 
-            String query = "INSERT INTO Dealer(name, phone, email) VALUES (?, ?, ?)";
+            String query = "INSERT INTO Dealer(name, phone, email , password) VALUES (?, ?, ?, ?)";
 
             PreparedStatement ps = con.prepareStatement(query);
 
             ps.setString(1, d.getName());
             ps.setString(2, d.getPhone());
             ps.setString(3, d.getEmail());
+            ps.setString(4, d.getPassword());
 
             ps.executeUpdate();
 
             System.out.println("Dealer saved to DB");
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 
 
     // Load owners from database
@@ -375,7 +377,7 @@ public class PropertyManagementSystem {
             Connection con = DatabaseConnection.getConnection();
 
             String query =
-                    "SELECT dealer_id, name, phone, email FROM Dealer";
+                    "SELECT dealer_id, name, phone, email ,password FROM Dealer";
 
             PreparedStatement ps =
                     con.prepareStatement(query);
@@ -390,7 +392,8 @@ public class PropertyManagementSystem {
                         rs.getInt("dealer_id"),
                         rs.getString("name"),
                         rs.getString("phone"),
-                        rs.getString("email")
+                        rs.getString("email"),
+                        rs.getString("password")
                 );
 
                 dealers.add(dealer);
@@ -405,8 +408,6 @@ public class PropertyManagementSystem {
             e.printStackTrace();
         }
     }
-
-
 
 
     // Load properties from database
@@ -486,8 +487,6 @@ public class PropertyManagementSystem {
     }
 
 
-
-
     public void updatePropertyStatusInDB(
             int propertyId,
             PropertyStatus status
@@ -526,6 +525,4 @@ public class PropertyManagementSystem {
             e.printStackTrace();
         }
     }
-
-
 }
