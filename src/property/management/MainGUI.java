@@ -3,6 +3,9 @@ package property.management;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class MainGUI extends JFrame {
 
@@ -83,6 +86,8 @@ public class MainGUI extends JFrame {
                 createPropertiesPage(),
                 "Properties"
         );
+        contentPanel.add(createVisitsPage(), "Visits");
+        contentPanel.add(createOwnersPage(), "Owners");
 
         refreshDashboard();
 
@@ -231,6 +236,13 @@ public class MainGUI extends JFrame {
         JButton ownerButton =
                 createMenuButton("Owners");
 
+        ownerButton.addActionListener(e ->
+                cardLayout.show(
+                        contentPanel,
+                        "Owners"
+                )
+        );
+
         sidebar.add(ownerButton);
 
         // =================================================
@@ -254,6 +266,13 @@ public class MainGUI extends JFrame {
 
         JButton visitButton =
                 createMenuButton("Visits");
+
+        visitButton.addActionListener(e ->
+                cardLayout.show(
+                        contentPanel,
+                        "Visits"
+                )
+        );
 
         sidebar.add(visitButton);
 
@@ -1800,6 +1819,11 @@ public class MainGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+
+
+
+
+
     // =====================================================
     // REFRESH DASHBOARD
     // =====================================================
@@ -1868,6 +1892,1179 @@ public class MainGUI extends JFrame {
             );
         }
     }
+
+
+// =====================================================
+// ADD VISIT FORM
+// =====================================================
+
+    private void showAddVisitForm(DefaultTableModel visitTableModel) {
+
+        JDialog dialog = new JDialog(
+                this,
+                "Add Property Visit",
+                true
+        );
+
+        dialog.setSize(550, 550);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        panel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20, 30, 20, 30
+                )
+        );
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // =================================================
+        // PROPERTY DROPDOWN
+        // =================================================
+
+        JComboBox<String> propertyBox =
+                new JComboBox<>();
+
+        for (Property property : getVisibleProperties()) {
+
+            propertyBox.addItem(
+                    property.getPropertyId()
+                            + " | "
+                            + property.getPropertyNumber()
+                            + " | "
+                            + property.getLocation()
+            );
+        }
+
+        // =================================================
+        // AUTO PROPERTY DETAILS
+        // =================================================
+
+        JTextField propertyIdField =
+                new JTextField();
+
+        JTextField propertyNumberField =
+                new JTextField();
+
+        JTextField locationField =
+                new JTextField();
+
+        propertyIdField.setEditable(false);
+        propertyNumberField.setEditable(false);
+        locationField.setEditable(false);
+
+        // =================================================
+        // CLIENT DETAILS
+        // =================================================
+
+        JTextField clientNameField =
+                new JTextField();
+
+        JTextField clientPhoneField =
+                new JTextField();
+
+        JTextField visitDateField =
+                new JTextField();
+
+        visitDateField.setToolTipText(
+                "Format: YYYY-MM-DD"
+        );
+
+        // =================================================
+        // STATUS
+        // =================================================
+
+        JComboBox<String> statusBox =
+                new JComboBox<>(
+                        new String[]{
+                                "SCHEDULED",
+                                "COMPLETED",
+                                "CANCELLED"
+                        }
+                );
+
+        // =================================================
+        // ADD ROWS
+        // =================================================
+
+        addFormRow(
+                panel,
+                gbc,
+                0,
+                "Property:",
+                propertyBox
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                1,
+                "Property ID:",
+                propertyIdField
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                2,
+                "Property No:",
+                propertyNumberField
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                3,
+                "Location:",
+                locationField
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                4,
+                "Client Name:",
+                clientNameField
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                5,
+                "Client Phone:",
+                clientPhoneField
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                6,
+                "Visit Date:",
+                visitDateField
+        );
+
+        addFormRow(
+                panel,
+                gbc,
+                7,
+                "Status:",
+                statusBox
+        );
+
+        // =================================================
+        // PROPERTY SELECTION
+        // =================================================
+
+        propertyBox.addActionListener(e -> {
+
+            int selectedIndex =
+                    propertyBox.getSelectedIndex();
+
+            if (selectedIndex == -1) {
+                return;
+            }
+
+            Property selectedProperty =
+                    getVisibleProperties()
+                            .get(selectedIndex);
+
+            propertyIdField.setText(
+                    String.valueOf(
+                            selectedProperty.getPropertyId()
+                    )
+            );
+
+            propertyNumberField.setText(
+                    selectedProperty.getPropertyNumber()
+            );
+
+            locationField.setText(
+                    selectedProperty.getLocation()
+            );
+        });
+
+        // =================================================
+        // LOAD FIRST PROPERTY
+        // =================================================
+
+        if (propertyBox.getItemCount() > 0) {
+
+            propertyBox.setSelectedIndex(0);
+
+            Property firstProperty =
+                    getVisibleProperties().get(0);
+
+            propertyIdField.setText(
+                    String.valueOf(
+                            firstProperty.getPropertyId()
+                    )
+            );
+
+            propertyNumberField.setText(
+                    firstProperty.getPropertyNumber()
+            );
+
+            locationField.setText(
+                    firstProperty.getLocation()
+            );
+        }
+
+        // =================================================
+        // SAVE BUTTON
+        // =================================================
+
+        JButton saveButton =
+                new JButton("Save Visit");
+
+        saveButton.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
+        );
+
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+
+        panel.add(
+                saveButton,
+                gbc
+        );
+
+        // =================================================
+        // SAVE VISIT
+        // =================================================
+
+        saveButton.addActionListener(e -> {
+
+            try {
+
+                // -----------------------------------------
+                // PROPERTY
+                // -----------------------------------------
+
+                int selectedIndex =
+                        propertyBox.getSelectedIndex();
+
+                if (selectedIndex == -1) {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Please select a property.",
+                            "Invalid Selection",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    return;
+                }
+
+                Property selectedProperty =
+                        getVisibleProperties()
+                                .get(selectedIndex);
+
+                // -----------------------------------------
+                // CLIENT
+                // -----------------------------------------
+
+                String clientName =
+                        clientNameField
+                                .getText()
+                                .trim();
+
+                String clientPhone =
+                        clientPhoneField
+                                .getText()
+                                .trim();
+
+                String visitDate =
+                        visitDateField
+                                .getText()
+                                .trim();
+
+                if (clientName.isEmpty()
+                        || clientPhone.isEmpty()
+                        || visitDate.isEmpty()) {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Please fill all required fields.",
+                            "Invalid Input",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    return;
+                }
+
+                // -----------------------------------------
+                // DATE FORMAT CHECK
+                // -----------------------------------------
+
+                if (!visitDate.matches(
+                        "\\d{4}-\\d{2}-\\d{2}"
+                )) {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Visit date must be in YYYY-MM-DD format.",
+                            "Invalid Date",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    return;
+                }
+
+                // -----------------------------------------
+                // STATUS
+                // -----------------------------------------
+
+                VisitStatus status =
+                        VisitStatus.valueOf(
+                                statusBox
+                                        .getSelectedItem()
+                                        .toString()
+                        );
+
+                // -----------------------------------------
+                // CREATE VISIT
+                // -----------------------------------------
+
+                Visit visit =
+                        new Visit(
+                                0,
+                                selectedProperty.getPropertyId(),
+                                selectedProperty.getPropertyNumber(),
+                                selectedProperty.getLocation(),
+                                clientName,
+                                clientPhone,
+                                visitDate,
+                                status
+                        );
+
+                // -----------------------------------------
+                // SAVE TO MEMORY
+                // -----------------------------------------
+
+                system.addVisit(visit);
+
+                // -----------------------------------------
+                // SAVE TO DATABASE
+                // -----------------------------------------
+
+                system.addVisitToDB(visit);
+
+                // -----------------------------------------
+                // RELOAD FROM DATABASE
+                // This gets the AUTO_INCREMENT visit_id
+                // -----------------------------------------
+
+                system.loadVisitsFromDB();
+
+                // -----------------------------------------
+                // REFRESH TABLE
+                // -----------------------------------------
+
+                visitTableModel.setRowCount(0);
+
+                for (Visit v :
+                        system.getVisits()) {
+
+                    Object[] row = {
+
+                            v.getVisitId(),
+
+                            v.getPropertyId(),
+
+                            v.getPropertyNumber(),
+
+                            v.getLocation(),
+
+                            v.getClientName(),
+
+                            v.getClientPhone(),
+
+                            v.getVisitDate(),
+
+                            v.getStatus()
+                    };
+
+                    visitTableModel.addRow(row);
+                }
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Visit added successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                dialog.dispose();
+
+            } catch (Exception ex) {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Error: "
+                                + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                ex.printStackTrace();
+            }
+        });
+
+        dialog.add(panel);
+
+        dialog.setVisible(true);
+    }
+
+
+    //===========================================================
+    // VIsit page
+    //=============================================================
+
+    private JPanel createVisitsPage() {
+
+        JPanel panel = new JPanel(new BorderLayout());
+
+        panel.setBackground(BACKGROUND_COLOR);
+
+        // ================= HEADER =================
+
+        JPanel header = new JPanel(new BorderLayout());
+
+        header.setBackground(BACKGROUND_COLOR);
+
+        header.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20, 25, 15, 25
+                )
+        );
+
+        JLabel title = new JLabel("Property Visits");
+
+        title.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        28
+                )
+        );
+
+        title.setForeground(
+                new Color(30, 41, 59)
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        panel.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+
+        // ================= TABLE =================
+
+        String[] columns = {
+                "Visit ID",
+                "Property ID",
+                "Property No",
+                "Location",
+                "Client Name",
+                "Client Phone",
+                "Visit Date",
+                "Status"
+        };
+
+        DefaultTableModel visitTableModel =
+                new DefaultTableModel(
+                        columns,
+                        0
+                );
+
+        JTable visitTable =
+                new JTable(visitTableModel);
+
+        visitTable.setRowHeight(30);
+
+        visitTable.getTableHeader()
+                .setFont(
+                        new Font(
+                                "Arial",
+                                Font.BOLD,
+                                14
+                        )
+                );
+
+        visitTable.setFont(
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        14
+                )
+        );
+
+        JScrollPane scrollPane =
+                new JScrollPane(visitTable);
+
+        scrollPane.setBorder(
+                BorderFactory.createEmptyBorder(
+                        0, 25, 15, 25
+                )
+        );
+
+        panel.add(
+                scrollPane,
+                BorderLayout.CENTER
+        );
+
+
+        // ================= BUTTONS =================
+
+        JPanel bottomPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT
+                        )
+                );
+
+        bottomPanel.setBackground(
+                BACKGROUND_COLOR
+        );
+
+        bottomPanel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        5, 25, 20, 25
+                )
+        );
+
+        JButton addVisitButton =
+                new JButton("Add Visit");
+
+        JButton updateButton =
+                new JButton("Update Status");
+
+        JButton deleteButton =
+                new JButton("Delete");
+
+        bottomPanel.add(addVisitButton);
+        bottomPanel.add(updateButton);
+        bottomPanel.add(deleteButton);
+
+        panel.add(
+                bottomPanel,
+                BorderLayout.SOUTH
+        );
+
+
+        // ================= LOAD VISITS =================
+
+        for (Visit visit : system.getVisits()) {
+
+            Object[] row = {
+
+                    visit.getVisitId(),
+
+                    visit.getPropertyId(),
+
+                    visit.getPropertyNumber(),
+
+                    visit.getLocation(),
+
+                    visit.getClientName(),
+
+                    visit.getClientPhone(),
+
+                    visit.getVisitDate(),
+
+                    visit.getStatus()
+            };
+
+            visitTableModel.addRow(row);
+        }
+
+
+        // ================= ADD VISIT =================
+        addVisitButton.addActionListener(e -> {
+            showAddVisitForm(visitTableModel);
+        });
+        // ================= UPDATE STATUS =================
+
+        updateButton.addActionListener(e -> {
+
+            int selectedRow =
+                    visitTable.getSelectedRow();
+
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please select a visit."
+                );
+
+                return;
+            }
+
+            int visitId =
+                    (int) visitTableModel
+                            .getValueAt(
+                                    selectedRow,
+                                    0
+                            );
+
+            String[] statuses = {
+                    "SCHEDULED",
+                    "COMPLETED",
+                    "CANCELLED"
+            };
+
+            JComboBox<String> statusBox =
+                    new JComboBox<>(statuses);
+
+            int result =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            statusBox,
+                            "Update Visit Status",
+                            JOptionPane.OK_CANCEL_OPTION
+                    );
+
+            if (result != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            VisitStatus status =
+                    VisitStatus.valueOf(
+                            statusBox
+                                    .getSelectedItem()
+                                    .toString()
+                    );
+
+            system.updateVisitStatusInDB(
+                    visitId,
+                    status
+            );
+
+            visitTableModel.setValueAt(
+                    status,
+                    selectedRow,
+                    7
+            );
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Visit status updated successfully!"
+            );
+        });
+
+
+        // ================= DELETE =================
+
+        deleteButton.addActionListener(e -> {
+
+            int selectedRow =
+                    visitTable.getSelectedRow();
+
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please select a visit."
+                );
+
+                return;
+            }
+
+            int visitId =
+                    (int) visitTableModel
+                            .getValueAt(
+                                    selectedRow,
+                                    0
+                            );
+
+            int choice =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            "Delete this visit?",
+                            "Confirm Delete",
+                            JOptionPane.YES_NO_OPTION
+                    );
+
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            system.deleteVisitFromDB(
+                    visitId
+            );
+
+            visitTableModel.removeRow(
+                    selectedRow
+            );
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Visit deleted successfully!"
+            );
+        });
+
+
+        return panel;
+    }
+
+
+
+
+
+    // =====================================================
+// OWNERS PAGE
+// =====================================================
+
+    private JPanel createOwnersPage() {
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BACKGROUND_COLOR);
+
+        // ---------------- HEADER ----------------
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(BACKGROUND_COLOR);
+
+        header.setBorder(
+                BorderFactory.createEmptyBorder(
+                        20, 25, 15, 25
+                )
+        );
+
+        JLabel title = new JLabel("Owners");
+
+        title.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        28
+                )
+        );
+
+        title.setForeground(
+                new Color(30, 41, 59)
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        panel.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+        // ---------------- TABLE ----------------
+
+        String[] columns = {
+                "Owner ID",
+                "Name",
+                "Phone",
+                "Email"
+        };
+
+        DefaultTableModel ownerTableModel =
+                new DefaultTableModel(columns, 0);
+
+        JTable ownerTable =
+                new JTable(ownerTableModel);
+
+        ownerTable.setRowHeight(30);
+
+        ownerTable.setFont(
+                new Font(
+                        "Arial",
+                        Font.PLAIN,
+                        14
+                )
+        );
+
+        ownerTable.getTableHeader().setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        14
+                )
+        );
+
+        JScrollPane scrollPane =
+                new JScrollPane(ownerTable);
+
+        scrollPane.setBorder(
+                BorderFactory.createEmptyBorder(
+                        0, 25, 15, 25
+                )
+        );
+
+        panel.add(
+                scrollPane,
+                BorderLayout.CENTER
+        );
+
+        // ---------------- BOTTOM BUTTONS ----------------
+
+        JPanel bottomPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT
+                        )
+                );
+
+        bottomPanel.setBackground(
+                BACKGROUND_COLOR
+        );
+
+        bottomPanel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        5, 25, 20, 25
+                )
+        );
+
+        JButton addOwnerButton =
+                new JButton("Add Owner");
+
+        JButton deleteOwnerButton =
+                new JButton("Delete Owner");
+
+        JButton refreshButton =
+                new JButton("Refresh");
+
+        bottomPanel.add(addOwnerButton);
+        bottomPanel.add(deleteOwnerButton);
+        bottomPanel.add(refreshButton);
+
+        panel.add(
+                bottomPanel,
+                BorderLayout.SOUTH
+        );
+
+        // =====================================================
+        // LOAD OWNERS INTO TABLE
+        // =====================================================
+
+        Runnable refreshOwners = () -> {
+
+            ownerTableModel.setRowCount(0);
+
+            for (Owner owner : system.getOwners()) {
+
+                Object[] row = {
+                        owner.getOwnerId(),
+                        owner.getName(),
+                        owner.getPhone(),
+                        owner.getEmail()
+                };
+
+                ownerTableModel.addRow(row);
+            }
+        };
+
+        // Initial load
+        refreshOwners.run();
+
+        // =====================================================
+        // ADD OWNER
+        // =====================================================
+
+        addOwnerButton.addActionListener(e -> {
+
+            JDialog dialog =
+                    new JDialog(
+                            this,
+                            "Add Owner",
+                            true
+                    );
+
+            dialog.setSize(450, 350);
+            dialog.setLocationRelativeTo(this);
+
+            JPanel form =
+                    new JPanel(
+                            new GridBagLayout()
+                    );
+
+            form.setBorder(
+                    BorderFactory.createEmptyBorder(
+                            20, 30, 20, 30
+                    )
+            );
+
+            GridBagConstraints gbc =
+                    new GridBagConstraints();
+
+            gbc.insets =
+                    new Insets(10, 10, 10, 10);
+
+            gbc.fill =
+                    GridBagConstraints.HORIZONTAL;
+
+            JTextField nameField =
+                    new JTextField();
+
+            JTextField phoneField =
+                    new JTextField();
+
+            JTextField emailField =
+                    new JTextField();
+
+            addFormRow(
+                    form,
+                    gbc,
+                    0,
+                    "Name:",
+                    nameField
+            );
+
+            addFormRow(
+                    form,
+                    gbc,
+                    1,
+                    "Phone:",
+                    phoneField
+            );
+
+            addFormRow(
+                    form,
+                    gbc,
+                    2,
+                    "Email:",
+                    emailField
+            );
+
+            JButton saveButton =
+                    new JButton("Save Owner");
+
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.gridwidth = 2;
+
+            form.add(
+                    saveButton,
+                    gbc
+            );
+
+            // =================================================
+            // SAVE OWNER
+            // =================================================
+
+            saveButton.addActionListener(event -> {
+
+                String name =
+                        nameField.getText().trim();
+
+                String phone =
+                        phoneField.getText().trim();
+
+                String email =
+                        emailField.getText().trim();
+
+                if (name.isEmpty()
+                        || phone.isEmpty()
+                        || email.isEmpty()) {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Please fill all fields.",
+                            "Invalid Input",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    return;
+                }
+
+                try {
+
+                    /*
+                     * ID = 0 because database
+                     * will generate the owner_id.
+                     */
+
+                    Owner owner =
+                            new Owner(
+                                    0,
+                                    name,
+                                    phone,
+                                    email
+                            );
+
+                    // Save to database
+                    system.addOwnerToDB(owner);
+
+                    // Reload owners from database
+                    system.loadOwnersFromDB();
+
+                    // Refresh table
+                    refreshOwners.run();
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Owner added successfully!",
+                            "Success",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    dialog.dispose();
+
+                } catch (Exception ex) {
+
+                    JOptionPane.showMessageDialog(
+                            dialog,
+                            "Error: " + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+
+                    ex.printStackTrace();
+                }
+            });
+
+            dialog.add(form);
+            dialog.setVisible(true);
+        });
+
+
+        // =====================================================
+// DELETE OWNER
+// =====================================================
+
+        deleteOwnerButton.addActionListener(e -> {
+
+            int selectedRow =
+                    ownerTable.getSelectedRow();
+
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please select an owner to delete.",
+                        "No Selection",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                return;
+            }
+
+            int ownerId =
+                    (int) ownerTableModel.getValueAt(
+                            selectedRow,
+                            0
+                    );
+
+            String ownerName =
+                    ownerTableModel.getValueAt(
+                            selectedRow,
+                            1
+                    ).toString();
+
+            int choice =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            "Are you sure you want to delete owner "
+                                    + ownerName + "?",
+                            "Confirm Delete",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            try {
+
+                Connection con =
+                        DatabaseConnection.getConnection();
+
+                String query =
+                        "DELETE FROM Owner WHERE owner_id = ?";
+
+                PreparedStatement ps =
+                        con.prepareStatement(query);
+
+                ps.setInt(1, ownerId);
+
+                int rows =
+                        ps.executeUpdate();
+
+                if (rows > 0) {
+
+                    // Reload owners from database
+                    system.loadOwnersFromDB();
+
+                    // Refresh table
+                    refreshOwners.run();
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Owner deleted successfully!",
+                            "Success",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                } else {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Owner not found.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+
+            } catch (Exception ex) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Cannot delete owner.\n"
+                                + ex.getMessage(),
+                        "Database Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+                ex.printStackTrace();
+            }
+        });
+
+        // =====================================================
+        // REFRESH BUTTON
+        // =====================================================
+
+        refreshButton.addActionListener(e -> {
+
+            system.loadOwnersFromDB();
+
+            refreshOwners.run();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Owners refreshed successfully!",
+                    "Refresh",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        });
+
+        return panel;
+    }
+
+
+
+
 
     // =====================================================
     // MAIN

@@ -2,12 +2,12 @@ package property.management;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;;
+import java.util.*;
 
 public class PropertyManagementSystem {
 
     private List<Property> properties;
-    private Queue<VisitRequest> visitQueue;
+    private List<Visit> visits = new ArrayList<>();
     private Scanner sc = new Scanner(System.in);
 
     private List<Owner> owners = new ArrayList<>();
@@ -16,11 +16,12 @@ public class PropertyManagementSystem {
     public PropertyManagementSystem() {
 
         properties = new ArrayList<>();
-        visitQueue = new LinkedList<>();
+
 
         loadOwnersFromDB();
         loadDealersFromDB();
         loadPropertiesFromDB();
+        loadVisitsFromDB();
     }
 
     public List<Dealer> getDealers() {
@@ -33,6 +34,12 @@ public class PropertyManagementSystem {
 
     public List<Property> getProperties() {
         return properties;
+    }
+    public List<Visit> getVisits() {
+        return visits;
+    }
+    public void addVisit(Visit visit) {
+        visits.add(visit);
     }
 
     //Add property
@@ -136,21 +143,6 @@ public class PropertyManagementSystem {
         }
     }
 
-    public void scheduleVisit(VisitRequest visit) {
-        visitQueue.add(visit);
-    }
-
-    public void processNextVisit() {
-        VisitRequest visit = visitQueue.poll();
-        if (visit == null) {
-            System.out.println("No visits scheduled.");
-            return;
-        }
-        visit.setStatus(VisitStatus.COMPLETED);
-        Property property = visit.getProperty();
-        System.out.println("Visit Completed");
-        System.out.println(visit);
-    }
 
     public void finalizeDeal(Property property) {
         if (property.getStatus() != PropertyStatus.AVAILABLE) {
@@ -518,6 +510,209 @@ public class PropertyManagementSystem {
 
             System.out.println(
                     "Property status updated in DATABASE"
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+
+    // =====================================================
+// VISIT MANAGEMENT
+// =====================================================
+    public boolean addVisitToDB(Visit visit) {
+
+        try {
+
+            Connection con = DatabaseConnection.getConnection();
+
+            String query =
+                    "INSERT INTO Visit " +
+                            "(property_id, client_name, client_phone, visit_date, status) " +
+                            "VALUES (?, ?, ?, ?, ?)";
+
+            PreparedStatement ps =
+                    con.prepareStatement(
+                            query,
+                            java.sql.Statement.RETURN_GENERATED_KEYS
+                    );
+
+            ps.setInt(1, visit.getPropertyId());
+            ps.setString(2, visit.getClientName());
+            ps.setString(3, visit.getClientPhone());
+            ps.setString(4, visit.getVisitDate());
+            ps.setString(5, visit.getStatus().toString());
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if (rs.next()) {
+                visit.setVisitId(rs.getInt(1));
+            }
+
+            System.out.println("Visit saved to DATABASE ✅");
+
+            return true;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+// =====================================================
+// LOAD VISITS FROM DATABASE
+// =====================================================
+
+    public void loadVisitsFromDB() {
+
+        try {
+
+            Connection con =
+                    DatabaseConnection.getConnection();
+
+            String query =
+                    "SELECT v.visit_id, " +
+                            "v.property_id, " +
+                            "p.property_number, " +
+                            "p.location, " +
+                            "v.client_name, " +
+                            "v.client_phone, " +
+                            "v.visit_date, " +
+                            "v.status " +
+                            "FROM Visit v " +
+                            "JOIN Property p " +
+                            "ON v.property_id = p.property_id";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ResultSet rs =
+                    ps.executeQuery();
+
+            visits.clear();
+
+            while (rs.next()) {
+
+                Visit visit =
+                        new Visit(
+                                rs.getInt("visit_id"),
+                                rs.getInt("property_id"),
+                                rs.getString("property_number"),
+                                rs.getString("location"),
+                                rs.getString("client_name"),
+                                rs.getString("client_phone"),
+                                rs.getString("visit_date"),
+                                VisitStatus.valueOf(
+                                        rs.getString("status")
+                                )
+                        );
+
+                visits.add(visit);
+            }
+
+            System.out.println(
+                    "Visits loaded from database: "
+                            + visits.size()
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+// =====================================================
+// UPDATE VISIT STATUS
+// =====================================================
+
+    public void updateVisitStatusInDB(
+            int visitId,
+            VisitStatus status
+    ) {
+
+        try {
+
+            Connection con =
+                    DatabaseConnection.getConnection();
+
+            String query =
+                    "UPDATE Visit SET status = ? " +
+                            "WHERE visit_id = ?";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ps.setString(
+                    1,
+                    status.toString()
+            );
+
+            ps.setInt(
+                    2,
+                    visitId
+            );
+
+            ps.executeUpdate();
+
+            // Update memory also
+            for (Visit visit : visits) {
+
+                if (visit.getVisitId() == visitId) {
+
+                    visit.setStatus(status);
+                    break;
+                }
+            }
+
+            System.out.println(
+                    "Visit status updated in DATABASE"
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+// =====================================================
+// DELETE VISIT
+// =====================================================
+
+    public void deleteVisitFromDB(int visitId) {
+
+        try {
+
+            Connection con =
+                    DatabaseConnection.getConnection();
+
+            String query =
+                    "DELETE FROM Visit WHERE visit_id = ?";
+
+            PreparedStatement ps =
+                    con.prepareStatement(query);
+
+            ps.setInt(
+                    1,
+                    visitId
+            );
+
+            ps.executeUpdate();
+
+            visits.removeIf(
+                    visit ->
+                            visit.getVisitId() == visitId
+            );
+
+            System.out.println(
+                    "Visit deleted from DATABASE"
             );
 
         } catch (Exception e) {
