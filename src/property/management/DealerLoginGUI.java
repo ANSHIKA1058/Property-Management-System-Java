@@ -241,9 +241,9 @@ public class DealerLoginGUI extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE
                 );
 
-                // Abhi temporary:
-                // Login ke baad MainGUI open hoga
-                MainGUI mainGUI = new MainGUI();
+                MainGUI mainGUI =
+                        new MainGUI(dealerId, dealerName);
+
                 mainGUI.setVisible(true);
 
                 dispose();

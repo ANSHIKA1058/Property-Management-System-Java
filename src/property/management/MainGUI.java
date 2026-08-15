@@ -10,6 +10,7 @@ public class MainGUI extends JFrame {
 
     private DefaultTableModel propertyTableModel;
     private JTable propertyTable;
+
     private JLabel totalPropertiesLabel;
     private JLabel availableLabel;
     private JLabel soldLabel;
@@ -22,24 +23,89 @@ public class MainGUI extends JFrame {
     private JPanel contentPanel;
     private CardLayout cardLayout;
 
+    // =====================================================
+    // LOGGED IN DEALER
+    // =====================================================
+
+    private int loggedInDealerId = -1;
+    private String loggedInDealerName = null;
+
+    // =====================================================
+    // NORMAL / ADMIN CONSTRUCTOR
+    // =====================================================
+
     public MainGUI() {
 
-        system = new PropertyManagementSystem();
+        this.system = new PropertyManagementSystem();
+
+        initializeGUI();
+    }
+
+    // =====================================================
+    // DEALER CONSTRUCTOR
+    // =====================================================
+
+    public MainGUI(int dealerId, String dealerName) {
+
+        this.loggedInDealerId = dealerId;
+        this.loggedInDealerName = dealerName;
+
+        this.system = new PropertyManagementSystem();
+
+        initializeGUI();
+    }
+
+    // =====================================================
+    // INITIALIZE GUI
+    // =====================================================
+
+    private void initializeGUI() {
+
         setTitle("Property Management System");
+
         setSize(1200, 700);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();
+
         contentPanel = new JPanel(cardLayout);
 
-        // Add pages
-        contentPanel.add(createDashboard(), "Dashboard");
-        contentPanel.add(createPropertiesPage(), "Properties");
+        // Pages
+        contentPanel.add(
+                createDashboard(),
+                "Dashboard"
+        );
+
+        contentPanel.add(
+                createPropertiesPage(),
+                "Properties"
+        );
+
         refreshDashboard();
+
         setLayout(new BorderLayout());
-        add(createSidebar(), BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
+
+        add(
+                createSidebar(),
+                BorderLayout.WEST
+        );
+
+        add(
+                contentPanel,
+                BorderLayout.CENTER
+        );
+    }
+
+    // =====================================================
+    // CHECK DEALER LOGIN
+    // =====================================================
+
+    private boolean isDealerLoggedIn() {
+
+        return loggedInDealerId != -1;
     }
 
     // =====================================================
@@ -50,35 +116,91 @@ public class MainGUI extends JFrame {
 
         JPanel sidebar = new JPanel();
 
-        sidebar.setPreferredSize(new Dimension(220, 700));
-        sidebar.setBackground(SIDEBAR_COLOR);
+        sidebar.setPreferredSize(
+                new Dimension(220, 700)
+        );
+
+        sidebar.setBackground(
+                SIDEBAR_COLOR
+        );
 
         sidebar.setLayout(
-                new BoxLayout(sidebar, BoxLayout.Y_AXIS)
+                new BoxLayout(
+                        sidebar,
+                        BoxLayout.Y_AXIS
+                )
         );
 
         // Title
-        JLabel title = new JLabel("  🏠 Property");
+        JLabel title =
+                new JLabel("  🏠 Property");
 
         title.setForeground(Color.WHITE);
+
         title.setFont(
-                new Font("Arial", Font.BOLD, 22)
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        22
+                )
         );
 
         title.setBorder(
                 BorderFactory.createEmptyBorder(
-                        30, 10, 30, 10
+                        30,
+                        10,
+                        30,
+                        10
                 )
         );
 
         sidebar.add(title);
 
-        // Dashboard
+        // =================================================
+        // DEALER INFO
+        // =================================================
+
+        if (isDealerLoggedIn()) {
+
+            JLabel dealerLabel =
+                    new JLabel(
+                            "  Dealer: "
+                                    + loggedInDealerName
+                    );
+
+            dealerLabel.setForeground(
+                    Color.LIGHT_GRAY
+            );
+
+            dealerLabel.setFont(
+                    new Font(
+                            "Arial",
+                            Font.PLAIN,
+                            13
+                    )
+            );
+
+            dealerLabel.setBorder(
+                    BorderFactory.createEmptyBorder(
+                            0,
+                            10,
+                            20,
+                            10
+                    )
+            );
+
+            sidebar.add(dealerLabel);
+        }
+
+        // =================================================
+        // DASHBOARD
+        // =================================================
+
         JButton dashboardButton =
                 createMenuButton("Dashboard");
 
-        dashboardButton.addActionListener(e ->
-                cardLayout.show(
+        dashboardButton.addActionListener(
+                e -> cardLayout.show(
                         contentPanel,
                         "Dashboard"
                 )
@@ -86,12 +208,15 @@ public class MainGUI extends JFrame {
 
         sidebar.add(dashboardButton);
 
-        // Properties
+        // =================================================
+        // PROPERTIES
+        // =================================================
+
         JButton propertyButton =
                 createMenuButton("Properties");
 
-        propertyButton.addActionListener(e ->
-                cardLayout.show(
+        propertyButton.addActionListener(
+                e -> cardLayout.show(
                         contentPanel,
                         "Properties"
                 )
@@ -99,40 +224,97 @@ public class MainGUI extends JFrame {
 
         sidebar.add(propertyButton);
 
-        // Owners
+        // =================================================
+        // OWNERS
+        // =================================================
+
         JButton ownerButton =
                 createMenuButton("Owners");
 
         sidebar.add(ownerButton);
 
-        // Dealers
-        JButton dealerButton =
-                createMenuButton("Dealers");
+        // =================================================
+        // DEALERS
+        // =================================================
 
-        sidebar.add(dealerButton);
+        // Dealer ko Dealers management ki zarurat nahi.
+        // Admin ke liye button rahega.
 
-        // Visits
+        if (!isDealerLoggedIn()) {
+
+            JButton dealerButton =
+                    createMenuButton("Dealers");
+
+            sidebar.add(dealerButton);
+        }
+
+        // =================================================
+        // VISITS
+        // =================================================
+
         JButton visitButton =
                 createMenuButton("Visits");
 
         sidebar.add(visitButton);
 
-        // Push buttons to bottom
+        // Push buttons down
         sidebar.add(
                 Box.createVerticalGlue()
         );
 
-        // Exit
-        JButton exitButton =
-                createMenuButton("Exit");
+        // =================================================
+        // LOGOUT
+        // =================================================
 
-        exitButton.addActionListener(e ->
-                System.exit(0)
-        );
+        if (isDealerLoggedIn()) {
 
-        sidebar.add(exitButton);
+            JButton logoutButton =
+                    createMenuButton("Logout");
+
+            logoutButton.addActionListener(
+                    e -> logout()
+            );
+
+            sidebar.add(logoutButton);
+
+        } else {
+
+            JButton exitButton =
+                    createMenuButton("Exit");
+
+            exitButton.addActionListener(
+                    e -> System.exit(0)
+            );
+
+            sidebar.add(exitButton);
+        }
 
         return sidebar;
+    }
+
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
+    private void logout() {
+
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to logout?",
+                        "Logout",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+        if (choice == JOptionPane.YES_OPTION) {
+
+            dispose();
+
+            DealerLoginGUI loginGUI =
+                    new DealerLoginGUI();
+
+            loginGUI.setVisible(true);
+        }
     }
 
     // =====================================================
@@ -143,10 +325,14 @@ public class MainGUI extends JFrame {
             String text
     ) {
 
-        JButton button = new JButton(text);
+        JButton button =
+                new JButton(text);
 
         button.setMaximumSize(
-                new Dimension(200, 50)
+                new Dimension(
+                        200,
+                        50
+                )
         );
 
         button.setAlignmentX(
@@ -161,10 +347,16 @@ public class MainGUI extends JFrame {
                 )
         );
 
-        button.setForeground(Color.WHITE);
-        button.setBackground(SIDEBAR_COLOR);
+        button.setForeground(
+                Color.WHITE
+        );
+
+        button.setBackground(
+                SIDEBAR_COLOR
+        );
 
         button.setFocusPainted(false);
+
         button.setBorderPainted(false);
 
         return button;
@@ -177,7 +369,9 @@ public class MainGUI extends JFrame {
     private JPanel createDashboard() {
 
         JPanel dashboard =
-                new JPanel(new BorderLayout());
+                new JPanel(
+                        new BorderLayout()
+                );
 
         dashboard.setBackground(
                 BACKGROUND_COLOR
@@ -185,7 +379,9 @@ public class MainGUI extends JFrame {
 
         // Header
         JPanel header =
-                new JPanel(new BorderLayout());
+                new JPanel(
+                        new BorderLayout()
+                );
 
         header.setBackground(
                 BACKGROUND_COLOR
@@ -193,12 +389,31 @@ public class MainGUI extends JFrame {
 
         header.setBorder(
                 BorderFactory.createEmptyBorder(
-                        25, 30, 20, 30
+                        25,
+                        30,
+                        20,
+                        30
                 )
         );
 
+        String headingText;
+
+        if (isDealerLoggedIn()) {
+
+            headingText =
+                    "Welcome, "
+                            + loggedInDealerName;
+
+        } else {
+
+            headingText =
+                    "Dashboard";
+        }
+
         JLabel heading =
-                new JLabel("Dashboard");
+                new JLabel(
+                        headingText
+                );
 
         heading.setFont(
                 new Font(
@@ -209,12 +424,18 @@ public class MainGUI extends JFrame {
         );
 
         heading.setForeground(
-                new Color(30, 41, 59)
+                new Color(
+                        30,
+                        41,
+                        59
+                )
         );
 
         JLabel welcome =
                 new JLabel(
-                        "Property Management Overview"
+                        isDealerLoggedIn()
+                                ? "Your Property Management Overview"
+                                : "Property Management Overview"
                 );
 
         welcome.setFont(
@@ -226,7 +447,11 @@ public class MainGUI extends JFrame {
         );
 
         welcome.setForeground(
-                new Color(100, 116, 139)
+                new Color(
+                        100,
+                        116,
+                        139
+                )
         );
 
         header.add(
@@ -244,38 +469,17 @@ public class MainGUI extends JFrame {
                 BorderLayout.NORTH
         );
 
-        // ==============================
-        // REAL PROPERTY COUNTS
-        // ==============================
+        // =================================================
+        // CARDS
+        // =================================================
 
-        int totalProperties =
-                system.getProperties().size();
-
-        int availableProperties = 0;
-        int soldProperties = 0;
-        int rentedProperties = 0;
-
-        for (Property property : system.getProperties()) {
-
-            if (property.getStatus() == PropertyStatus.AVAILABLE) {
-
-                availableProperties++;
-
-            } else if (property.getStatus() == PropertyStatus.SOLD) {
-
-                soldProperties++;
-
-            } else if (property.getStatus() == PropertyStatus.RENTED) {
-
-                rentedProperties++;
-            }
-        }
-
-        // Cards
         JPanel cardsPanel =
                 new JPanel(
                         new GridLayout(
-                                1, 4, 20, 20
+                                1,
+                                4,
+                                20,
+                                20
                         )
                 );
 
@@ -285,23 +489,55 @@ public class MainGUI extends JFrame {
 
         cardsPanel.setBorder(
                 BorderFactory.createEmptyBorder(
-                        10, 30, 30, 30
+                        10,
+                        30,
+                        30,
+                        30
                 )
         );
 
-        JPanel totalCard = createCard("Total Properties", "0");
-        JPanel availableCard = createCard("Available", "0");
-        JPanel soldCard = createCard("Sold", "0");
-        JPanel rentedCard = createCard("Rented", "0");
+        JPanel totalCard =
+                createCard(
+                        "Total Properties",
+                        "0"
+                );
 
-        totalPropertiesLabel = (JLabel) totalCard.getComponent(2);
-        availableLabel = (JLabel) availableCard.getComponent(2);
-        soldLabel = (JLabel) soldCard.getComponent(2);
-        rentedLabel = (JLabel) rentedCard.getComponent(2);
+        JPanel availableCard =
+                createCard(
+                        "Available",
+                        "0"
+                );
+
+        JPanel soldCard =
+                createCard(
+                        "Sold",
+                        "0"
+                );
+
+        JPanel rentedCard =
+                createCard(
+                        "Rented",
+                        "0"
+                );
+
+        totalPropertiesLabel =
+                (JLabel) totalCard.getComponent(2);
+
+        availableLabel =
+                (JLabel) availableCard.getComponent(2);
+
+        soldLabel =
+                (JLabel) soldCard.getComponent(2);
+
+        rentedLabel =
+                (JLabel) rentedCard.getComponent(2);
 
         cardsPanel.add(totalCard);
+
         cardsPanel.add(availableCard);
+
         cardsPanel.add(soldCard);
+
         cardsPanel.add(rentedCard);
 
         dashboard.add(
@@ -311,6 +547,7 @@ public class MainGUI extends JFrame {
 
         return dashboard;
     }
+
     // =====================================================
     // DASHBOARD CARD
     // =====================================================
@@ -320,9 +557,12 @@ public class MainGUI extends JFrame {
             String value
     ) {
 
-        JPanel card = new JPanel();
+        JPanel card =
+                new JPanel();
 
-        card.setBackground(CARD_COLOR);
+        card.setBackground(
+                CARD_COLOR
+        );
 
         card.setLayout(
                 new BoxLayout(
@@ -334,10 +574,17 @@ public class MainGUI extends JFrame {
         card.setBorder(
                 BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(
-                                new Color(226, 232, 240)
+                                new Color(
+                                        226,
+                                        232,
+                                        240
+                                )
                         ),
                         BorderFactory.createEmptyBorder(
-                                20, 20, 20, 20
+                                20,
+                                20,
+                                20,
+                                20
                         )
                 )
         );
@@ -354,7 +601,11 @@ public class MainGUI extends JFrame {
         );
 
         titleLabel.setForeground(
-                new Color(100, 116, 139)
+                new Color(
+                        100,
+                        116,
+                        139
+                )
         );
 
         JLabel valueLabel =
@@ -369,7 +620,11 @@ public class MainGUI extends JFrame {
         );
 
         valueLabel.setForeground(
-                new Color(30, 41, 59)
+                new Color(
+                        30,
+                        41,
+                        59
+                )
         );
 
         card.add(titleLabel);
@@ -390,16 +645,22 @@ public class MainGUI extends JFrame {
     private JPanel createPropertiesPage() {
 
         JPanel panel =
-                new JPanel(new BorderLayout());
+                new JPanel(
+                        new BorderLayout()
+                );
 
         panel.setBackground(
                 BACKGROUND_COLOR
         );
 
-        // ---------------- HEADER ----------------
+        // =================================================
+        // HEADER
+        // =================================================
 
         JPanel header =
-                new JPanel(new BorderLayout());
+                new JPanel(
+                        new BorderLayout()
+                );
 
         header.setBackground(
                 BACKGROUND_COLOR
@@ -407,12 +668,19 @@ public class MainGUI extends JFrame {
 
         header.setBorder(
                 BorderFactory.createEmptyBorder(
-                        20, 25, 15, 25
+                        20,
+                        25,
+                        15,
+                        25
                 )
         );
 
         JLabel title =
-                new JLabel("Properties");
+                new JLabel(
+                        isDealerLoggedIn()
+                                ? "My Properties"
+                                : "Properties"
+                );
 
         title.setFont(
                 new Font(
@@ -423,7 +691,11 @@ public class MainGUI extends JFrame {
         );
 
         title.setForeground(
-                new Color(30, 41, 59)
+                new Color(
+                        30,
+                        41,
+                        59
+                )
         );
 
         header.add(
@@ -431,7 +703,9 @@ public class MainGUI extends JFrame {
                 BorderLayout.WEST
         );
 
-        // ---------------- SEARCH ----------------
+        // =================================================
+        // SEARCH
+        // =================================================
 
         JPanel searchPanel =
                 new JPanel(
@@ -448,7 +722,10 @@ public class MainGUI extends JFrame {
                 new JTextField(15);
 
         searchField.setPreferredSize(
-                new Dimension(180, 35)
+                new Dimension(
+                        180,
+                        35
+                )
         );
 
         JButton searchButton =
@@ -457,9 +734,16 @@ public class MainGUI extends JFrame {
         JButton availableButton =
                 new JButton("Available");
 
+        JButton allButton =
+                new JButton("All");
+
         searchPanel.add(searchField);
+
         searchPanel.add(searchButton);
+
         searchPanel.add(availableButton);
+
+        searchPanel.add(allButton);
 
         header.add(
                 searchPanel,
@@ -471,10 +755,12 @@ public class MainGUI extends JFrame {
                 BorderLayout.NORTH
         );
 
-        // ---------------- TABLE ----------------
-
+        // =================================================
+        // TABLE
+        // =================================================
 
         String[] columns = {
+
                 "ID",
                 "Property No",
                 "Location",
@@ -493,7 +779,9 @@ public class MainGUI extends JFrame {
                 );
 
         propertyTable =
-                new JTable(propertyTableModel);
+                new JTable(
+                        propertyTableModel
+                );
 
         propertyTable.setRowHeight(30);
 
@@ -515,12 +803,16 @@ public class MainGUI extends JFrame {
         );
 
         JScrollPane scrollPane =
-                new JScrollPane(propertyTable);
-
+                new JScrollPane(
+                        propertyTable
+                );
 
         scrollPane.setBorder(
                 BorderFactory.createEmptyBorder(
-                        0, 25, 15, 25
+                        0,
+                        25,
+                        15,
+                        25
                 )
         );
 
@@ -529,7 +821,9 @@ public class MainGUI extends JFrame {
                 BorderLayout.CENTER
         );
 
-        // ---------------- BOTTOM BUTTONS ----------------
+        // =================================================
+        // BOTTOM BUTTONS
+        // =================================================
 
         JPanel bottomPanel =
                 new JPanel(
@@ -544,21 +838,32 @@ public class MainGUI extends JFrame {
 
         bottomPanel.setBorder(
                 BorderFactory.createEmptyBorder(
-                        5, 25, 20, 25
+                        5,
+                        25,
+                        20,
+                        25
                 )
         );
 
         JButton addButton =
-                new JButton("Add Property");
+                new JButton(
+                        "Add Property"
+                );
 
         JButton updateButton =
-                new JButton("Update");
+                new JButton(
+                        "Update"
+                );
 
         JButton deleteButton =
-                new JButton("Delete");
+                new JButton(
+                        "Delete"
+                );
 
         bottomPanel.add(addButton);
+
         bottomPanel.add(updateButton);
+
         bottomPanel.add(deleteButton);
 
         panel.add(
@@ -566,194 +871,46 @@ public class MainGUI extends JFrame {
                 BorderLayout.SOUTH
         );
 
-        // ---------------- BUTTON ACTIONS ----------------
+        // =================================================
+        // ADD
+        // =================================================
 
-        addButton.addActionListener(e -> {
+        addButton.addActionListener(
+                e -> showAddPropertyForm()
+        );
 
-            showAddPropertyForm();
+        // =================================================
+        // UPDATE
+        // =================================================
 
-        });
+        updateButton.addActionListener(
+                e -> updateSelectedProperty()
+        );
 
+        // =================================================
+        // DELETE
+        // =================================================
 
-        updateButton.addActionListener(e -> {
+        deleteButton.addActionListener(
+                e -> deleteSelectedProperty()
+        );
 
-            int selectedRow = propertyTable.getSelectedRow();
+        // =================================================
+        // SEARCH
+        // =================================================
 
-            if (selectedRow == -1) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please select a property to update.",
-                        "No Selection",
-                        JOptionPane.WARNING_MESSAGE
-                );
-
-                return;
-            }
-
-            String propertyNumber =
-                    propertyTableModel
-                            .getValueAt(selectedRow, 1)
-                            .toString();
-
-            Property property =
-                    system.searchProperty(propertyNumber);
-
-            if (property == null) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Property not found.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-
-                return;
-            }
-
-            String[] statuses = {
-                    "AVAILABLE",
-                    "SOLD",
-                    "RENTED"
-            };
-
-            JComboBox<String> statusBox =
-                    new JComboBox<>(statuses);
-
-            statusBox.setSelectedItem(
-                    property.getStatus().toString()
-            );
-
-            int result = JOptionPane.showConfirmDialog(
-                    this,
-                    statusBox,
-                    "Update Property Status",
-                    JOptionPane.OK_CANCEL_OPTION
-            );
-
-            if (result != JOptionPane.OK_OPTION) {
-                return;
-            }
-
-            PropertyStatus newStatus =
-                    PropertyStatus.valueOf(
-                            statusBox.getSelectedItem().toString()
-                    );
-
-            // Update memory
-            system.updateProperty(
-                    propertyNumber,
-                    newStatus
-            );
-
-            // Update database
-            system.updatePropertyStatusInDB(
-                    property.getPropertyId(),
-                    newStatus
-            );
-
-            // Refresh table
-            refreshPropertyTable();
-
-            // Refresh dashboard
-            refreshDashboard();
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Property status updated successfully!",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
-        });
-
-
-
-
-        deleteButton.addActionListener(e -> {
-
-            int selectedRow = propertyTable.getSelectedRow();
-
-            // No property selected
-            if (selectedRow == -1) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please select a property to delete."
-                );
-                return;
-            }
-
-            // Get property ID from table
-            int propertyId = (int) propertyTableModel.getValueAt(
-                    selectedRow,
-                    0
-            );
-
-            String propertyNumber =
-                    propertyTableModel.getValueAt(
-                            selectedRow,
-                            1
-                    ).toString();
-
-            // Confirmation
-            int choice = JOptionPane.showConfirmDialog(
-                    this,
-                    "Are you sure you want to delete property "
-                            + propertyNumber + "?",
-                    "Confirm Delete",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
-
-            if (choice != JOptionPane.YES_OPTION) {
-                return;
-            }
-
-            // Find property in memory
-            Property property =
-                    system.searchProperty(propertyNumber);
-
-            if (property == null) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Property not found.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-
-                return;
-            }
-
-            // Delete from database
-            system.deletePropertyFromDB(propertyId);
-
-            // Delete from memory
-            system.getProperties().remove(property);
-
-            // Refresh GUI
-            refreshPropertyTable();
-            refreshDashboard();
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Property deleted successfully!",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-        });
-
-
-
-        //search button
         searchButton.addActionListener(e -> {
 
-            String searchText = searchField.getText().trim();
+            String searchText =
+                    searchField
+                            .getText()
+                            .trim()
+                            .toLowerCase();
 
-            // Empty search -> show all properties
             if (searchText.isEmpty()) {
+
                 refreshPropertyTable();
+
                 return;
             }
 
@@ -761,29 +918,30 @@ public class MainGUI extends JFrame {
 
             boolean found = false;
 
-            for (Property p : system.getProperties()) {
+            for (Property p :
+                    getVisibleProperties()) {
 
-                String location = p.getLocation().toLowerCase();
-                String propertyNumber = p.getPropertyNumber().toLowerCase();
-                String price = String.valueOf(p.getPrice());
+                String location =
+                        p.getLocation()
+                                .toLowerCase();
 
-                if (location.contains(searchText.toLowerCase())
-                        || propertyNumber.contains(searchText.toLowerCase())
+                String propertyNumber =
+                        p.getPropertyNumber()
+                                .toLowerCase();
+
+                String price =
+                        String.valueOf(
+                                p.getPrice()
+                        );
+
+                // IMPORTANT:
+                // Price exact match only
+                if (location.contains(searchText)
+                        || propertyNumber.contains(searchText)
                         || price.equals(searchText)) {
 
-                    Object[] row = {
-                            p.getPropertyId(),
-                            p.getPropertyNumber(),
-                            p.getLocation(),
-                            p.getPrice(),
-                            p.getType(),
-                            p.getPurpose(),
-                            p.getStatus(),
-                            p.getDealerId(),
-                            p.getOwnerId()
-                    };
+                    addPropertyToTable(p);
 
-                    propertyTableModel.addRow(row);
                     found = true;
                 }
             }
@@ -792,52 +950,373 @@ public class MainGUI extends JFrame {
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "No property found for: " + searchText,
+                        "No property found for: "
+                                + searchText,
                         "Search Result",
                         JOptionPane.INFORMATION_MESSAGE
                 );
             }
         });
 
+        // =================================================
+        // AVAILABLE
+        // =================================================
 
+        availableButton.addActionListener(
+                e -> {
 
-        availableButton.addActionListener(e -> {
+                    propertyTableModel
+                            .setRowCount(0);
 
-            propertyTableModel.setRowCount(0);
+                    for (Property p :
+                            getVisibleProperties()) {
 
-            for (Property p : system.getProperties()) {
+                        if (p.getStatus()
+                                == PropertyStatus.AVAILABLE) {
 
-                if (p.getStatus() == PropertyStatus.AVAILABLE) {
+                            addPropertyToTable(p);
+                        }
+                    }
 
-                    Object[] row = {
-                            p.getPropertyId(),
-                            p.getPropertyNumber(),
-                            p.getLocation(),
-                            p.getPrice(),
-                            p.getType(),
-                            p.getPurpose(),
-                            p.getStatus(),
-                            p.getDealerId(),
-                            p.getOwnerId()
-                    };
+                    if (propertyTableModel
+                            .getRowCount() == 0) {
 
-                    propertyTableModel.addRow(row);
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "No available properties found.",
+                                "Available Properties",
+                                JOptionPane.INFORMATION_MESSAGE
+                        );
+                    }
                 }
-            }
+        );
 
-            if (propertyTableModel.getRowCount() == 0) {
+        // =================================================
+        // ALL
+        // =================================================
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "No available properties found.",
-                        "Available Properties",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-            }
-        });
+        allButton.addActionListener(
+                e -> refreshPropertyTable()
+        );
+
         refreshPropertyTable();
+
         return panel;
     }
+
+    // =====================================================
+    // GET VISIBLE PROPERTIES
+    // =====================================================
+
+    private java.util.List<Property>
+    getVisibleProperties() {
+
+        java.util.List<Property>
+                visibleProperties =
+                new java.util.ArrayList<>();
+
+        for (Property p :
+                system.getProperties()) {
+
+            // Admin sees everything
+            if (!isDealerLoggedIn()) {
+
+                visibleProperties.add(p);
+
+            }
+
+            // Dealer sees only own properties
+            else if (
+                    p.getDealerId()
+                            == loggedInDealerId
+            ) {
+
+                visibleProperties.add(p);
+            }
+        }
+
+        return visibleProperties;
+    }
+
+    // =====================================================
+    // ADD PROPERTY TO TABLE
+    // =====================================================
+
+    private void addPropertyToTable(
+            Property p
+    ) {
+
+        Object[] row = {
+
+                p.getPropertyId(),
+
+                p.getPropertyNumber(),
+
+                p.getLocation(),
+
+                p.getPrice(),
+
+                p.getType(),
+
+                p.getPurpose(),
+
+                p.getStatus(),
+
+                p.getDealerId(),
+
+                p.getOwnerId()
+        };
+
+        propertyTableModel.addRow(row);
+    }
+
+    // =====================================================
+    // REFRESH PROPERTY TABLE
+    // =====================================================
+
+    private void refreshPropertyTable() {
+
+        propertyTableModel.setRowCount(0);
+
+        for (Property p :
+                getVisibleProperties()) {
+
+            addPropertyToTable(p);
+        }
+    }
+
+    // =====================================================
+    // UPDATE PROPERTY
+    // =====================================================
+
+    private void updateSelectedProperty() {
+
+        int selectedRow =
+                propertyTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select a property to update.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        String propertyNumber =
+                propertyTableModel
+                        .getValueAt(
+                                selectedRow,
+                                1
+                        )
+                        .toString();
+
+        Property property =
+                system.searchProperty(
+                        propertyNumber
+                );
+
+        if (property == null) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Property not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+        // Security check
+        if (isDealerLoggedIn()
+                && property.getDealerId()
+                != loggedInDealerId) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "You can only update your own properties.",
+                    "Access Denied",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+        String[] statuses = {
+
+                "AVAILABLE",
+                "SOLD",
+                "RENTED"
+        };
+
+        JComboBox<String> statusBox =
+                new JComboBox<>(
+                        statuses
+                );
+
+        statusBox.setSelectedItem(
+                property
+                        .getStatus()
+                        .toString()
+        );
+
+        int result =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        statusBox,
+                        "Update Property Status",
+                        JOptionPane.OK_CANCEL_OPTION
+                );
+
+        if (result !=
+                JOptionPane.OK_OPTION) {
+
+            return;
+        }
+
+        PropertyStatus newStatus =
+                PropertyStatus.valueOf(
+                        statusBox
+                                .getSelectedItem()
+                                .toString()
+                );
+
+        // Memory
+        system.updateProperty(
+                propertyNumber,
+                newStatus
+        );
+
+        // Database
+        system.updatePropertyStatusInDB(
+                property.getPropertyId(),
+                newStatus
+        );
+
+        refreshPropertyTable();
+
+        refreshDashboard();
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Property status updated successfully!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    // =====================================================
+    // DELETE PROPERTY
+    // =====================================================
+
+    private void deleteSelectedProperty() {
+
+        int selectedRow =
+                propertyTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select a property to delete.",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        int propertyId =
+                (int) propertyTableModel
+                        .getValueAt(
+                                selectedRow,
+                                0
+                        );
+
+        String propertyNumber =
+                propertyTableModel
+                        .getValueAt(
+                                selectedRow,
+                                1
+                        )
+                        .toString();
+
+        Property property =
+                system.searchProperty(
+                        propertyNumber
+                );
+
+        if (property == null) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Property not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+        // Security check
+        if (isDealerLoggedIn()
+                && property.getDealerId()
+                != loggedInDealerId) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "You can only delete your own properties.",
+                    "Access Denied",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to delete property "
+                                + propertyNumber
+                                + "?",
+                        "Confirm Delete",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+        if (choice !=
+                JOptionPane.YES_OPTION) {
+
+            return;
+        }
+
+        system.deletePropertyFromDB(
+                propertyId
+        );
+
+        system.getProperties()
+                .remove(property);
+
+        refreshPropertyTable();
+
+        refreshDashboard();
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Property deleted successfully!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    // =====================================================
+    // ADD FORM ROW
+    // =====================================================
+
     private void addFormRow(
             JPanel panel,
             GridBagConstraints gbc,
@@ -847,11 +1326,17 @@ public class MainGUI extends JFrame {
     ) {
 
         gbc.gridwidth = 1;
+
         gbc.weightx = 0.3;
+
         gbc.gridx = 0;
+
         gbc.gridy = row;
 
-        JLabel label = new JLabel(labelText);
+        JLabel label =
+                new JLabel(
+                        labelText
+                );
 
         label.setFont(
                 new Font(
@@ -861,100 +1346,86 @@ public class MainGUI extends JFrame {
                 )
         );
 
-        panel.add(label, gbc);
+        panel.add(
+                label,
+                gbc
+        );
 
         gbc.weightx = 0.7;
+
         gbc.gridx = 1;
 
-        panel.add(component, gbc);
+        panel.add(
+                component,
+                gbc
+        );
     }
 
-
-
-
-
-
-
-    private void refreshPropertyTable() {
-
-        propertyTableModel.setRowCount(0);
-
-        for (Property p : system.getProperties()) {
-
-            Object[] row = {
-                    p.getPropertyId(),
-                    p.getPropertyNumber(),
-                    p.getLocation(),
-                    p.getPrice(),
-                    p.getType(),
-                    p.getPurpose(),
-                    p.getStatus(),
-                    p.getDealerId(),
-                    p.getOwnerId()
-            };
-
-            propertyTableModel.addRow(row);
-        }
-    }
-
-
-
-
-
-
-
-
     // =====================================================
-    // MAIN
+    // ADD PROPERTY FORM
     // =====================================================
-
-    public static void main(String[] args) {
-
-        SwingUtilities.invokeLater(() -> {
-
-            MainGUI gui =
-                    new MainGUI();
-
-            gui.setVisible(true);
-        });
-    }
-
-
-
-
-    // =====================================================
-// ADD PROPERTY FORM
-// =====================================================
 
     private void showAddPropertyForm() {
 
-        JDialog dialog = new JDialog(
-                this,
-                "Add Property",
-                true
+        JDialog dialog =
+                new JDialog(
+                        this,
+                        "Add Property",
+                        true
+                );
+
+        dialog.setSize(
+                550,
+                600
         );
 
-        dialog.setSize(550, 600);
-        dialog.setLocationRelativeTo(this);
+        dialog.setLocationRelativeTo(
+                this
+        );
 
-        JPanel panel = new JPanel(new GridBagLayout());
+        JPanel panel =
+                new JPanel(
+                        new GridBagLayout()
+                );
 
         panel.setBorder(
                 BorderFactory.createEmptyBorder(
-                        20, 30, 20, 30
+                        20,
+                        30,
+                        20,
+                        30
                 )
         );
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        GridBagConstraints gbc =
+                new GridBagConstraints();
 
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets =
+                new Insets(
+                        8,
+                        8,
+                        8,
+                        8
+                );
 
-        // Fields
-        JTextField idField = new JTextField();
-        JTextField numberField = new JTextField();
-        JTextField locationField = new JTextField();
-        JTextField priceField = new JTextField();
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        // =================================================
+        // FIELDS
+        // =================================================
+
+        JTextField idField =
+                new JTextField();
+
+        JTextField numberField =
+                new JTextField();
+
+        JTextField locationField =
+                new JTextField();
+
+        JTextField priceField =
+                new JTextField();
 
         JComboBox<String> typeBox =
                 new JComboBox<>(
@@ -974,54 +1445,141 @@ public class MainGUI extends JFrame {
                         }
                 );
 
+        // =================================================
+        // DEALER
+        // =================================================
+
         JComboBox<Dealer> dealerBox =
                 new JComboBox<>();
 
-        for (Dealer dealer : system.getDealers()) {
-            dealerBox.addItem(dealer);
+        if (isDealerLoggedIn()) {
+
+            Dealer loggedDealer =
+                    system.findDealer(
+                            loggedInDealerId
+                    );
+
+            if (loggedDealer != null) {
+
+                dealerBox.addItem(
+                        loggedDealer
+                );
+            }
+
+            // Dealer cannot change dealer
+            dealerBox.setEnabled(false);
+
+        } else {
+
+            for (Dealer dealer :
+                    system.getDealers()) {
+
+                dealerBox.addItem(
+                        dealer
+                );
+            }
         }
+
+        // =================================================
+        // OWNER
+        // =================================================
 
         JComboBox<Owner> ownerBox =
                 new JComboBox<>();
 
-        for (Owner owner : system.getOwners()) {
+        for (Owner owner :
+                system.getOwners()) {
+
             ownerBox.addItem(owner);
         }
 
+        JTextField descriptionField =
+                new JTextField();
 
-        JTextField descriptionField = new JTextField();
+        // =================================================
+        // ADD ROWS
+        // =================================================
 
-        // Add rows
-        addFormRow(panel, gbc, 0,
-                "Property ID:", idField);
+        addFormRow(
+                panel,
+                gbc,
+                0,
+                "Property ID:",
+                idField
+        );
 
-        addFormRow(panel, gbc, 1,
-                "Property Number:", numberField);
+        addFormRow(
+                panel,
+                gbc,
+                1,
+                "Property Number:",
+                numberField
+        );
 
-        addFormRow(panel, gbc, 2,
-                "Location:", locationField);
+        addFormRow(
+                panel,
+                gbc,
+                2,
+                "Location:",
+                locationField
+        );
 
-        addFormRow(panel, gbc, 3,
-                "Price:", priceField);
+        addFormRow(
+                panel,
+                gbc,
+                3,
+                "Price:",
+                priceField
+        );
 
-        addFormRow(panel, gbc, 4,
-                "Property Type:", typeBox);
+        addFormRow(
+                panel,
+                gbc,
+                4,
+                "Property Type:",
+                typeBox
+        );
 
-        addFormRow(panel, gbc, 5,
-                "Purpose:", purposeBox);
+        addFormRow(
+                panel,
+                gbc,
+                5,
+                "Purpose:",
+                purposeBox
+        );
 
-        addFormRow(panel, gbc, 6,
-                "Dealer:", dealerBox);
+        addFormRow(
+                panel,
+                gbc,
+                6,
+                "Dealer:",
+                dealerBox
+        );
 
-        addFormRow(panel, gbc, 7,
-                "Owner:", ownerBox);
+        addFormRow(
+                panel,
+                gbc,
+                7,
+                "Owner:",
+                ownerBox
+        );
 
-        addFormRow(panel, gbc, 8,
-                "Description:", descriptionField);
+        addFormRow(
+                panel,
+                gbc,
+                8,
+                "Description:",
+                descriptionField
+        );
 
-        // Save button
+        // =================================================
+        // SAVE BUTTON
+        // =================================================
+
         JButton saveButton =
-                new JButton("Save Property");
+                new JButton(
+                        "Save Property"
+                );
 
         saveButton.setFont(
                 new Font(
@@ -1032,168 +1590,301 @@ public class MainGUI extends JFrame {
         );
 
         gbc.gridx = 0;
+
         gbc.gridy = 9;
+
         gbc.gridwidth = 2;
+
         gbc.weightx = 1;
 
-        panel.add(saveButton, gbc);
+        panel.add(
+                saveButton,
+                gbc
+        );
 
-        // Save action
-        saveButton.addActionListener(e -> {
+        // =================================================
+        // SAVE ACTION
+        // =================================================
 
-            try {
+        saveButton.addActionListener(
+                e -> {
 
-                int id = Integer.parseInt(
-                        idField.getText()
-                );
+                    try {
 
-                String propertyNumber =
-                        numberField.getText();
+                        int id =
+                                Integer.parseInt(
+                                        idField
+                                                .getText()
+                                                .trim()
+                                );
 
-                String location =
-                        locationField.getText();
+                        String propertyNumber =
+                                numberField
+                                        .getText()
+                                        .trim();
 
-                long price = Long.parseLong(
-                        priceField.getText()
-                );
+                        String location =
+                                locationField
+                                        .getText()
+                                        .trim();
 
-                Dealer selectedDealer =
-                        (Dealer) dealerBox.getSelectedItem();
+                        long price =
+                                Long.parseLong(
+                                        priceField
+                                                .getText()
+                                                .trim()
+                                );
 
-                Owner selectedOwner =
-                        (Owner) ownerBox.getSelectedItem();
+                        if (propertyNumber.isEmpty()
+                                || location.isEmpty()) {
 
-                if (selectedDealer == null || selectedOwner == null) {
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "Please fill all required fields.",
+                                    "Invalid Input",
+                                    JOptionPane.WARNING_MESSAGE
+                            );
 
-                    JOptionPane.showMessageDialog(
-                            dialog,
-                            "Please select a Dealer and Owner.",
-                            "Invalid Selection",
-                            JOptionPane.ERROR_MESSAGE
-                    );
+                            return;
+                        }
 
-                    return;
+                        Dealer selectedDealer =
+                                (Dealer)
+                                        dealerBox
+                                                .getSelectedItem();
+
+                        Owner selectedOwner =
+                                (Owner)
+                                        ownerBox
+                                                .getSelectedItem();
+
+                        if (selectedDealer == null
+                                || selectedOwner == null) {
+
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "Please select a Dealer and Owner.",
+                                    "Invalid Selection",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+
+                            return;
+                        }
+
+                        int dealerId =
+                                selectedDealer
+                                        .getDealerId();
+
+                        int ownerId =
+                                selectedOwner
+                                        .getOwnerId();
+
+                        // Extra security
+                        if (isDealerLoggedIn()
+                                && dealerId
+                                != loggedInDealerId) {
+
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "You can only add property under your own dealer account.",
+                                    "Access Denied",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+
+                            return;
+                        }
+
+                        String description =
+                                descriptionField
+                                        .getText()
+                                        .trim();
+
+                        PropertyType type =
+                                PropertyType.valueOf(
+                                        typeBox
+                                                .getSelectedItem()
+                                                .toString()
+                                );
+
+                        PropertyPurpose purpose =
+                                PropertyPurpose.valueOf(
+                                        purposeBox
+                                                .getSelectedItem()
+                                                .toString()
+                                );
+
+                        Property property =
+                                new Property(
+                                        id,
+                                        propertyNumber,
+                                        location,
+                                        price,
+                                        type,
+                                        purpose,
+                                        dealerId,
+                                        ownerId,
+                                        description
+                                );
+
+                        // Add to memory
+                        system.addProperty(
+                                property
+                        );
+
+                        // Check whether added
+                        Property addedProperty =
+                                system.searchProperty(
+                                        propertyNumber
+                                );
+
+                        if (addedProperty != null) {
+
+                            // Save to database
+                            system.addPropertyToDB(
+                                    property
+                            );
+
+                            refreshPropertyTable();
+
+                            refreshDashboard();
+
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "Property added successfully!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+
+                            dialog.dispose();
+
+                        } else {
+
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "Owner ID or Dealer ID not found!",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+
+                    } catch (
+                            NumberFormatException ex
+                    ) {
+
+                        JOptionPane.showMessageDialog(
+                                dialog,
+                                "Please enter valid numbers.",
+                                "Invalid Input",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+
+                    } catch (
+                            Exception ex
+                    ) {
+
+                        JOptionPane.showMessageDialog(
+                                dialog,
+                                "Error: "
+                                        + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+
+                        ex.printStackTrace();
+                    }
                 }
-
-                int dealerId = selectedDealer.getDealerId();
-                int ownerId = selectedOwner.getOwnerId();
-
-                String description =
-                        descriptionField.getText();
-
-                PropertyType type =
-                        PropertyType.valueOf(
-                                typeBox
-                                        .getSelectedItem()
-                                        .toString()
-                        );
-
-                PropertyPurpose purpose =
-                        PropertyPurpose.valueOf(
-                                purposeBox
-                                        .getSelectedItem()
-                                        .toString()
-                        );
-
-                Property property =
-                        new Property(
-                                id,
-                                propertyNumber,
-                                location,
-                                price,
-                                type,
-                                purpose,
-                                dealerId,
-                                ownerId,
-                                description
-                        );
-
-                system.addProperty(property);
-
-                if (system.searchProperty(propertyNumber) != null) {
-
-                    system.addPropertyToDB(property);
-
-                    refreshPropertyTable();
-                    refreshDashboard();
-
-                    JOptionPane.showMessageDialog(
-                            dialog,
-                            "Property added successfully!",
-                            "Success",
-                            JOptionPane.INFORMATION_MESSAGE
-                    );
-
-                    dialog.dispose();
-
-                } else {
-
-                    JOptionPane.showMessageDialog(
-                            dialog,
-                            "Owner ID or Dealer ID not found!",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
-                }
-
-
-                dialog.dispose();
-
-            } catch (NumberFormatException ex) {
-
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        "Please enter valid numbers.",
-                        "Invalid Input",
-                        JOptionPane.ERROR_MESSAGE
-                );
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        "Error: " + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
+        );
 
         dialog.add(panel);
 
         dialog.setVisible(true);
     }
 
-
-
-
+    // =====================================================
+    // REFRESH DASHBOARD
+    // =====================================================
 
     private void refreshDashboard() {
 
-        int total = system.getProperties().size();
+        int total = 0;
 
         int available = 0;
+
         int sold = 0;
+
         int rented = 0;
 
-        for (Property p : system.getProperties()) {
+        for (Property p :
+                getVisibleProperties()) {
 
-            if (p.getStatus() == PropertyStatus.AVAILABLE) {
+            total++;
+
+            if (p.getStatus()
+                    == PropertyStatus.AVAILABLE) {
+
                 available++;
-            }
-            else if (p.getStatus() == PropertyStatus.SOLD) {
+
+            } else if (
+                    p.getStatus()
+                            == PropertyStatus.SOLD
+            ) {
+
                 sold++;
-            }
-            else if (p.getStatus() == PropertyStatus.RENTED) {
+
+            } else if (
+                    p.getStatus()
+                            == PropertyStatus.RENTED
+            ) {
+
                 rented++;
             }
         }
 
-        totalPropertiesLabel.setText(String.valueOf(total));
-        availableLabel.setText(String.valueOf(available));
-        soldLabel.setText(String.valueOf(sold));
-        rentedLabel.setText(String.valueOf(rented));
+        if (totalPropertiesLabel != null) {
+
+            totalPropertiesLabel.setText(
+                    String.valueOf(total)
+            );
+        }
+
+        if (availableLabel != null) {
+
+            availableLabel.setText(
+                    String.valueOf(available)
+            );
+        }
+
+        if (soldLabel != null) {
+
+            soldLabel.setText(
+                    String.valueOf(sold)
+            );
+        }
+
+        if (rentedLabel != null) {
+
+            rentedLabel.setText(
+                    String.valueOf(rented)
+            );
+        }
     }
 
+    // =====================================================
+    // MAIN
+    // =====================================================
 
+    public static void main(
+            String[] args
+    ) {
+
+        SwingUtilities.invokeLater(
+                () -> {
+
+                    MainGUI gui =
+                            new MainGUI();
+
+                    gui.setVisible(true);
+                }
+        );
+    }
 }
