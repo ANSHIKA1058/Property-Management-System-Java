@@ -2676,7 +2676,8 @@ public class MainGUI extends JFrame {
                 "Owner ID",
                 "Name",
                 "Phone",
-                "Email"
+                "Email",
+                "Properties Owned"
         };
 
         DefaultTableModel ownerTableModel =
@@ -2764,11 +2765,34 @@ public class MainGUI extends JFrame {
 
             for (Owner owner : system.getOwners()) {
 
+                StringBuilder propertiesOwned = new StringBuilder();
+
+                for (Property property : system.getProperties()) {
+
+                    if (property.getOwnerId() == owner.getOwnerId()) {
+
+                        if (propertiesOwned.length() > 0) {
+                            propertiesOwned.append(", ");
+                        }
+
+                        propertiesOwned.append(
+                                property.getPropertyNumber()
+                                        + " - "
+                                        + property.getLocation()
+                        );
+                    }
+                }
+
+                if (propertiesOwned.length() == 0) {
+                    propertiesOwned.append("No Property");
+                }
+
                 Object[] row = {
                         owner.getOwnerId(),
                         owner.getName(),
                         owner.getPhone(),
-                        owner.getEmail()
+                        owner.getEmail(),
+                        propertiesOwned.toString()
                 };
 
                 ownerTableModel.addRow(row);
