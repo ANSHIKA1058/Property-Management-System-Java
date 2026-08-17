@@ -18,10 +18,9 @@ public class MainGUI extends JFrame {
     private JLabel availableLabel;
     private JLabel soldLabel;
     private JLabel rentedLabel;
-
-    private final Color SIDEBAR_COLOR = new Color(30, 41, 59);
-    private final Color BACKGROUND_COLOR = new Color(248, 250, 252);
-    private final Color CARD_COLOR = Color.WHITE;
+    private final Color SIDEBAR_COLOR = new Color(70, 45, 30);
+    private final Color BACKGROUND_COLOR = new Color(245, 235, 225);
+    private final Color CARD_COLOR = new Color(255, 250, 245);
 
     private JPanel contentPanel;
     private CardLayout cardLayout;

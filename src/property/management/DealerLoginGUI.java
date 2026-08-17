@@ -11,6 +11,20 @@ public class DealerLoginGUI extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
 
+    private boolean isValidEmail(String email) {
+        return email.matches(
+                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+        );
+    }
+
+    private boolean isStrongPassword(String password) {
+        return password.length() >= 8 &&
+                password.matches(".*[A-Z].*") &&
+                password.matches(".*[a-z].*") &&
+                password.matches(".*\\d.*") &&
+                password.matches(".*[^A-Za-z0-9].*");
+    }
+
     public DealerLoginGUI() {
 
         setTitle("Dealer Login");
@@ -19,6 +33,7 @@ public class DealerLoginGUI extends JFrame {
         setLocationRelativeTo(null);
 
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(225, 200, 170));
         panel.setBorder(
                 BorderFactory.createEmptyBorder(30, 40, 30, 40)
         );
@@ -43,7 +58,7 @@ public class DealerLoginGUI extends JFrame {
 
         panel.add(new JLabel("Email:"), gbc);
 
-        emailField = new JTextField();
+        emailField = new JTextField(40);
         gbc.gridx = 1;
 
         panel.add(emailField, gbc);
@@ -54,7 +69,7 @@ public class DealerLoginGUI extends JFrame {
 
         panel.add(new JLabel("Password:"), gbc);
 
-        passwordField = new JPasswordField();
+        passwordField = new JPasswordField(40);
         gbc.gridx = 1;
 
         panel.add(passwordField, gbc);
@@ -62,6 +77,12 @@ public class DealerLoginGUI extends JFrame {
         // Login button
         JButton loginButton = new JButton("Login");
 
+        loginButton.setBackground(new Color(92, 64, 51));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFont(new Font("Arial", Font.BOLD, 15));
+        loginButton.setFocusPainted(false);
+        loginButton.setBorderPainted(false);
+        loginButton.setPreferredSize(new Dimension(200, 40));
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
@@ -72,6 +93,12 @@ public class DealerLoginGUI extends JFrame {
         // New User button
         JButton registerButton = new JButton("New User? Register");
 
+        registerButton.setBackground(new Color(92, 64, 51));
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFont(new Font("Arial", Font.BOLD, 15));
+        registerButton.setFocusPainted(false);
+        registerButton.setBorderPainted(false);
+        registerButton.setPreferredSize(new Dimension(200, 40));
         gbc.gridy = 4;
         gbc.gridwidth = 10;
 
@@ -94,65 +121,156 @@ public class DealerLoginGUI extends JFrame {
                 true
         );
 
-        dialog.setSize(450, 400);
+        dialog.setSize(500, 430);
         dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
 
+        // Main panel
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(225, 200, 170));
+        panel.setBorder(
+                BorderFactory.createEmptyBorder(25, 40, 25, 40)
+        );
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JTextField nameField = new JTextField(30);
-        JTextField phoneField = new JTextField(30);
-        JTextField emailField = new JTextField(30);
-        JPasswordField passwordField = new JPasswordField(30);
+        // Colors
+        Color darkBrown = new Color(70, 45, 30);
+        Color buttonBrown = new Color(92, 64, 51);
+
+        // ---------------- TITLE ----------------
+
+        JLabel titleLabel = new JLabel("Create Dealer Account");
+        titleLabel.setFont(
+                new Font("Arial", Font.BOLD, 24)
+        );
+        titleLabel.setForeground(darkBrown);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        panel.add(new JLabel("Name:"), gbc);
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(5, 10, 20, 10);
+
+        panel.add(titleLabel, gbc);
+
+        // ---------------- FIELDS ----------------
+
+        JTextField nameField = new JTextField(25);
+        JTextField phoneField = new JTextField(25);
+        JTextField emailField = new JTextField(25);
+        JPasswordField passwordField = new JPasswordField(25);
+
+        // Make fields white
+        nameField.setBackground(Color.WHITE);
+        phoneField.setBackground(Color.WHITE);
+        emailField.setBackground(Color.WHITE);
+        passwordField.setBackground(Color.WHITE);
+
+        // ---------------- NAME ----------------
+
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+
+        JLabel nameLabel = new JLabel("Name:");
+        nameLabel.setForeground(darkBrown);
+        nameLabel.setFont(
+                new Font("Arial", Font.BOLD, 14)
+        );
+
+        panel.add(nameLabel, gbc);
 
         gbc.gridx = 1;
         panel.add(nameField, gbc);
 
+        // ---------------- PHONE ----------------
+
         gbc.gridx = 0;
-        gbc.gridy = 1;
-        panel.add(new JLabel("Phone:"), gbc);
+        gbc.gridy = 2;
+
+        JLabel phoneLabel = new JLabel("Phone:");
+        phoneLabel.setForeground(darkBrown);
+        phoneLabel.setFont(
+                new Font("Arial", Font.BOLD, 14)
+        );
+
+        panel.add(phoneLabel, gbc);
 
         gbc.gridx = 1;
         panel.add(phoneField, gbc);
 
+        // ---------------- EMAIL ----------------
+
         gbc.gridx = 0;
-        gbc.gridy = 2;
-        panel.add(new JLabel("Email:"), gbc);
+        gbc.gridy = 3;
+
+        JLabel emailLabel = new JLabel("Email:");
+        emailLabel.setForeground(darkBrown);
+        emailLabel.setFont(
+                new Font("Arial", Font.BOLD, 14)
+        );
+
+        panel.add(emailLabel, gbc);
 
         gbc.gridx = 1;
         panel.add(emailField, gbc);
 
+        // ---------------- PASSWORD ----------------
+
         gbc.gridx = 0;
-        gbc.gridy = 3;
-        panel.add(new JLabel("Password:"), gbc);
+        gbc.gridy = 4;
+
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setForeground(darkBrown);
+        passwordLabel.setFont(
+                new Font("Arial", Font.BOLD, 14)
+        );
+
+        panel.add(passwordLabel, gbc);
 
         gbc.gridx = 1;
         panel.add(passwordField, gbc);
 
+        // ---------------- REGISTER BUTTON ----------------
+
         JButton registerButton =
                 new JButton("Register");
 
+        registerButton.setBackground(buttonBrown);
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFont(
+                new Font("Arial", Font.BOLD, 15)
+        );
+        registerButton.setFocusPainted(false);
+        registerButton.setBorderPainted(false);
+        registerButton.setPreferredSize(
+                new Dimension(200, 40)
+        );
+
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 10, 5, 10);
 
         panel.add(registerButton, gbc);
+
+        // ---------------- REGISTER LOGIC ----------------
 
         registerButton.addActionListener(e -> {
 
             String name = nameField.getText().trim();
             String phone = phoneField.getText().trim();
             String email = emailField.getText().trim();
+
             String password =
                     new String(passwordField.getPassword());
 
+            // Empty fields
             if (name.isEmpty() ||
                     phone.isEmpty() ||
                     email.isEmpty() ||
@@ -168,6 +286,50 @@ public class DealerLoginGUI extends JFrame {
                 return;
             }
 
+            // Phone validation
+            if (!phone.matches("\\d{10}")) {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Phone number must contain exactly 10 digits.",
+                        "Invalid Phone Number",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                return;
+            }
+
+            // Email validation
+            if (!isValidEmail(email)) {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Please enter a valid email address.",
+                        "Invalid Email",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                return;
+            }
+
+            // Password validation
+            if (!isStrongPassword(password)) {
+
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Password must be at least 8 characters and contain:\n" +
+                                "• One uppercase letter\n" +
+                                "• One lowercase letter\n" +
+                                "• One number\n" +
+                                "• One special character",
+                        "Weak Password",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                return;
+            }
+
+            // Create dealer
             Dealer dealer = new Dealer(
                     0,
                     name,
@@ -176,11 +338,13 @@ public class DealerLoginGUI extends JFrame {
                     password
             );
 
+            // Save to database
             PropertyManagementSystem system =
                     new PropertyManagementSystem();
 
             system.addDealerToDB(dealer);
 
+            // Success message
             JOptionPane.showMessageDialog(
                     dialog,
                     "Account created successfully!\nPlease login.",
